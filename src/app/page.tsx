@@ -8,7 +8,7 @@ export default function Home() {
     <div className="flex flex-1 flex-col gap-y-8 min-h-screen">
       <ErrorBoundary fallback={<Placeholder label="哦豁，炸了！" />}>
         <Suspense fallback={<Spinner />}>
-          <div>1</div>
+          <div>这里是标题</div>
         </Suspense>
       </ErrorBoundary>
     </div>

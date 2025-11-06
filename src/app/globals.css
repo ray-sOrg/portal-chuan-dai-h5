@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* 移动端响应式基准字体大小 */
+html {
+  /* 最小 14px，基于视口宽度动态计算，最大 18px */
+  /* 计算公式：14px + (18-14) * ((100vw - 320px) / (768-320)) */
+  font-size: clamp(
+    14px,
+    calc(14px + (18 - 14) * ((100vw - 320px) / (768 - 320))),
+    18px
+  );
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -8,8 +19,6 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,7 +29,31 @@
 }
 
 body {
+  /* 背景和前景色 */
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+
+  /* 移动端优化的系统字体栈（支持中文） */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    Arial, sans-serif;
+
+  /* 字体大小和行高 */
+  font-size: 1rem; /* 16px */
+  line-height: 1.5;
+
+  /* 字体平滑（提升移动端显示效果） */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* 文字自动换行 */
+  word-wrap: break-word;
+  word-break: break-word;
+
+  /* 禁止文本选择（可选，移动端常用） */
+  /* -webkit-user-select: none;
+  user-select: none; */
+
+  /* 点击高亮取消（移动端） */
+  -webkit-tap-highlight-color: transparent;
 }
