@@ -1,0 +1,91 @@
+{
+  "common": {
+    "home": "Home",
+    "menu": "Menu",
+    "photo": "Photo Wall",
+    "profile": "My Page",
+    "language": "Language"
+  },
+  "header": {
+    "title": "Chuan · Dai",
+    "subtitle": "A Family-Style Sichuan Restaurant with Dai Ethnic Flavors"
+  },
+  "home": {
+    "banner": {
+      "title": "Savor the Spicy Delights!",
+      "subtitle": "Authentic Sichuan flavors delivered to your door",
+      "discount": "15% off your first order!",
+      "orderNow": "Order Now"
+    },
+    "featured": {
+      "title": "Featured Dishes",
+      "viewAll": "View All"
+    },
+    "news": {
+      "title": "Latest News",
+      "viewAll": "View All",
+      "menuUpdate": "Exciting New Dishes Added to Our Menu!",
+      "menuUpdateDesc": "Explore our culinary innovations, blending traditional techniques",
+      "chefInterview": "Meet Chef Li: The Master Behind Our Authentic Flavors",
+      "chefInterviewDesc": "An exclusive interview with our head chef about his passion for"
+    },
+    "quickLinks": {
+      "title": "Quick Links",
+      "myOrders": "My Orders",
+      "recipes": "Recipes",
+      "discover": "Discover",
+      "favorites": "Favorites"
+    }
+  },
+  "dishes": {
+    "mapoTofu": "Mapo Tofu",
+    "mapoTofuDesc": "Classic Sichuan dish with silken tofu",
+    "danDanNoodles": "Dan Dan Noodles",
+    "danDanNoodlesDesc": "Hand-pulled noodles in a fiery chili oil",
+    "kungPaoChicken": "Kung Pao Chicken",
+    "kungPaoChickenDesc": "A classic Sichuan dish with diced chicken, peanuts, vegetables, and chili peppers. Sweet.",
+    "sichuanSpicyNoodles": "Sichuan Spicy Noodles",
+    "sichuanSpicyNoodlesDesc": "Hand-pulled noodles with fiery chili oil",
+    "porkChiveDumplings": "Pork & Chive Dumplings",
+    "porkChiveDumplingsDesc": "Pan-fried with a ginger soy dip"
+  },
+  "profile": {
+    "editProfile": "Edit Profile",
+    "myFavorites": "My Favorites",
+    "orderHistory": "Order History",
+    "appSettings": "App Settings",
+    "generalSettings": "General Settings",
+    "notifications": "Notifications",
+    "privacyPolicy": "Privacy Policy",
+    "logOut": "Log Out",
+    "addToBag": "Add to Bag",
+    "viewReceipt": "View Receipt",
+    "reorder": "Reorder"
+  },
+  "menu": {
+    "categories": {
+      "all": "All",
+      "appetizers": "Appetizers",
+      "mainCourses": "Main Courses",
+      "soups": "Soups"
+    },
+    "tags": {
+      "spicy": "Spicy",
+      "chicken": "Chicken",
+      "vegetarian": "Vegetarian Option"
+    },
+    "add": "Add"
+  },
+  "photoWall": {
+    "title": "Photo Wall",
+    "exploreCuisine": "Explore Cuisine & Culture",
+    "themedCollections": "Themed Collections",
+    "streetFoodDelights": "Street Food Delights",
+    "mountainLandscapes": "Mountain Landscapes",
+    "photos": "Photos"
+  },
+  "placeholder": {
+    "error": "Oops, something went wrong!",
+    "comingSoon": "Coming Soon"
+  }
+}

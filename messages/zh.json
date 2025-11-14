@@ -1,0 +1,91 @@
+{
+  "common": {
+    "home": "首页",
+    "menu": "菜单",
+    "photo": "照片墙",
+    "profile": "我的",
+    "language": "语言"
+  },
+  "header": {
+    "title": "川 · 傣",
+    "subtitle": "家庭式川菜餐厅，融合傣族风味"
+  },
+  "home": {
+    "banner": {
+      "title": "品味麻辣美食！",
+      "subtitle": "正宗川味，送到您家门口",
+      "discount": "首单享受15%折扣！",
+      "orderNow": "立即下单"
+    },
+    "featured": {
+      "title": "特色菜品",
+      "viewAll": "查看全部"
+    },
+    "news": {
+      "title": "最新资讯",
+      "viewAll": "查看全部",
+      "menuUpdate": "菜单新增精彩菜品！",
+      "menuUpdateDesc": "探索我们的烹饪创新，融合传统技艺",
+      "chefInterview": "认识李师傅：正宗口味背后的大师",
+      "chefInterviewDesc": "与我们的主厨独家访谈，了解他对烹饪的热情"
+    },
+    "quickLinks": {
+      "title": "快捷链接",
+      "myOrders": "我的订单",
+      "recipes": "食谱",
+      "discover": "发现",
+      "favorites": "收藏"
+    }
+  },
+  "dishes": {
+    "mapoTofu": "麻婆豆腐",
+    "mapoTofuDesc": "经典川菜，嫩滑豆腐",
+    "danDanNoodles": "担担面",
+    "danDanNoodlesDesc": "手工拉面配火辣辣椒油",
+    "kungPaoChicken": "宫保鸡丁",
+    "kungPaoChickenDesc": "经典川菜，鸡丁配花生、蔬菜和辣椒。香甜可口。",
+    "sichuanSpicyNoodles": "川味辣面条",
+    "sichuanSpicyNoodlesDesc": "手工拉面配火辣辣椒油",
+    "porkChiveDumplings": "猪肉韭菜饺子",
+    "porkChiveDumplingsDesc": "煎饺配姜汁蘸料"
+  },
+  "profile": {
+    "editProfile": "编辑资料",
+    "myFavorites": "我的收藏",
+    "orderHistory": "订单历史",
+    "appSettings": "应用设置",
+    "generalSettings": "通用设置",
+    "notifications": "通知",
+    "privacyPolicy": "隐私政策",
+    "logOut": "退出登录",
+    "addToBag": "加入购物袋",
+    "viewReceipt": "查看收据",
+    "reorder": "重新订购"
+  },
+  "menu": {
+    "categories": {
+      "all": "全部",
+      "appetizers": "开胃菜",
+      "mainCourses": "主菜",
+      "soups": "汤品"
+    },
+    "tags": {
+      "spicy": "辣",
+      "chicken": "鸡肉",
+      "vegetarian": "素食选项"
+    },
+    "add": "添加"
+  },
+  "photoWall": {
+    "title": "照片墙",
+    "exploreCuisine": "探索美食与文化",
+    "themedCollections": "主题收藏",
+    "streetFoodDelights": "街头美食",
+    "mountainLandscapes": "山地风景",
+    "photos": "张照片"
+  },
+  "placeholder": {
+    "error": "哦豁，炸了！",
+    "comingSoon": "尽情期待"
+  }
+}
