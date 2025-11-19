@@ -1,21 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useRouter, usePathname } from '@/i18n/routing';
 import { Home, Menu, Camera, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-export type TabType = 'home' | 'menu' | 'photo' | 'profile';
-
-interface FooterNavProps {
-  activeTab?: TabType;
-  onTabChange?: (tab: TabType) => void;
-}
+import { useNavigation, type TabType } from '@/stores/navigation';
 
 interface NavItem {
   id: TabType;
   labelKey: string;
   icon: React.ComponentType<{ className?: string }>;
+  path: string;
 }
 
 const navItems: NavItem[] = [
@@ -23,31 +19,48 @@ const navItems: NavItem[] = [
     id: 'home',
     labelKey: 'common.home',
     icon: Home,
+    path: '/home',
   },
   {
     id: 'menu',
     labelKey: 'common.menu',
     icon: Menu,
+    path: '/menu',
   },
   {
     id: 'photo',
     labelKey: 'common.photo',
     icon: Camera,
+    path: '/photo',
   },
   {
     id: 'profile',
     labelKey: 'common.profile',
     icon: User,
+    path: '/profile',
   },
 ];
 
-export function FooterNav({ activeTab = 'home', onTabChange }: FooterNavProps) {
-  const [currentTab, setCurrentTab] = useState<TabType>(activeTab);
+export function FooterNav() {
   const t = useTranslations();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { activeTab, setActiveTab } = useNavigation();
+
+  // 根据当前路径同步激活状态
+  useEffect(() => {
+    const currentItem = navItems.find(item => item.path === pathname);
+    if (currentItem && currentItem.id !== activeTab) {
+      setActiveTab(currentItem.id);
+    }
+  }, [pathname, activeTab, setActiveTab]);
 
   const handleTabClick = (tab: TabType) => {
-    setCurrentTab(tab);
-    onTabChange?.(tab);
+    const targetItem = navItems.find(item => item.id === tab);
+    if (targetItem) {
+      setActiveTab(tab);
+      router.push(targetItem.path as any);
+    }
   };
 
   return (
@@ -55,7 +68,7 @@ export function FooterNav({ activeTab = 'home', onTabChange }: FooterNavProps) {
       <div className="flex items-center justify-around py-2 px-4 max-w-md mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = currentTab === item.id;
+          const isActive = activeTab === item.id;
           
           return (
             <button

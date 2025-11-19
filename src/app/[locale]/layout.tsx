@@ -3,6 +3,9 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { ThemeProvider } from '@/components/theme';
+import { FooterNav } from '@/components/footer-nav';
+import { NavigationSync } from '@/components/navigation-sync';
+import { LanguageDetector } from '@/components/language-detector';
 import type { Metadata } from 'next';
 
 type Props = {
@@ -96,7 +99,14 @@ export default async function LocaleLayout({
           disableTransitionOnChange
         >
           <NextIntlClientProvider messages={messages}>
-            {children}
+            <div className="flex flex-col min-h-screen">
+              <main className="flex-1 pb-20">
+                {children}
+              </main>
+              <FooterNav />
+              <NavigationSync />
+              <LanguageDetector />
+            </div>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

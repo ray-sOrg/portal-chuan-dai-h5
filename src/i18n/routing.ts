@@ -16,6 +16,7 @@ export const routing = defineRouting({
     // string or a template string can be provided.
     // Optionally, you can omit the pathnames.
     '/': '/',
+    '/home': '/home',
     '/menu': '/menu',
     '/photo': '/photo',
     '/profile': '/profile'

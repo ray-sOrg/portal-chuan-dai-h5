@@ -5,6 +5,7 @@ import { useRouter, usePathname } from '@/i18n/routing';
 import { Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { useLanguage, type SupportedLocale } from '@/stores/language';
 
 export function LanguageToggle() {
   const t = useTranslations('common');
@@ -12,6 +13,7 @@ export function LanguageToggle() {
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { setPreferredLocale, updateLastUsedLocale } = useLanguage();
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -21,6 +23,13 @@ export function LanguageToggle() {
   const currentLanguage = languages.find(lang => lang.code === locale);
 
   const handleLanguageChange = (newLocale: string) => {
+    const supportedLocale = newLocale as SupportedLocale;
+    
+    // 更新语言偏好存储
+    setPreferredLocale(supportedLocale);
+    updateLastUsedLocale(supportedLocale);
+    
+    // 路由跳转
     router.replace(pathname, { locale: newLocale });
     setIsOpen(false);
   };
