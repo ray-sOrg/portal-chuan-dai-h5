@@ -1,0 +1,40 @@
+# --- 基础忽略 ---
+.git
+.gitignore
+.github
+Dockerfile
+.dockerignore
+README.md
+LICENSE
+
+# --- 环境配置文件 ---
+.env
+.env.*
+*.local
+
+# --- 构建输出 ---
+.next
+.next/cache
+out
+dist
+build
+coverage
+*.log
+*.tmp
+*.tsbuildinfo
+
+# --- 依赖缓存 ---
+node_modules
+.pnpm-store
+.npm
+.yarn
+.yarnrc
+.yarnrc.yml
+.yarn-cache
+package-lock.json
+
+# --- 编辑器/系统文件 ---
+.vscode
+.idea
+.DS_Store
+Thumbs.db

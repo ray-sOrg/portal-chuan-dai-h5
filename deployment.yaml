@@ -1,0 +1,102 @@
+# ========================================
+# 🔧 项目配置说明（复用到其他项目时需要修改）
+# ========================================
+# 需要修改的地方：
+# 1. 所有 "portal-chuan-dai-h5" 改为你的项目名称
+# 2. secret name: supabase-secret-portal-chuan-dai-h5 改为 supabase-secret-{项目名}
+# 3. Ingress host: task.tt829.cn 改为你的域名
+# 4. Ingress secretName: portal-chuan-dai-h5-tls 改为 {项目名}-tls
+# 5. containerPort 和 targetPort: 根据你的项目端口修改
+# 6. 健康检查路径: /api/health 改为你的项目健康检查路径
+# ========================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal-chuan-dai-h5-deployment
+  labels:
+    app: portal-chuan-dai-h5
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: portal-chuan-dai-h5
+  template:
+    metadata:
+      labels:
+        app: portal-chuan-dai-h5
+    spec:
+      imagePullSecrets:
+        - name: aliyun-acr-secret
+      containers:
+        - name: portal-chuan-dai-h5
+          image: __IMAGE_NAME__:__IMAGE_TAG__
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-secret-portal-chuan-dai-h5
+                  key: DATABASE_URL
+            - name: DIRECT_URL
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-secret-portal-chuan-dai-h5
+                  key: DIRECT_URL
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portal-chuan-dai-h5-service
+spec:
+  selector:
+    app: portal-chuan-dai-h5
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: portal-chuan-dai-h5-ingress
+  namespace: default
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+    - hosts:
+        - chuan-dai.tt829.cn
+      secretName: portal-chuan-dai-h5-tls
+  rules:
+    - host: chuan-dai.tt829.cn
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: portal-chuan-dai-h5-service
+                port:
+                  number: 80
