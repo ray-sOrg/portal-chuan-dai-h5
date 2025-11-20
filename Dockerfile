@@ -26,7 +26,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # 执行 Next.js 构建，postinstall 会生成 Prisma Client
-RUN bun run build && rm -rf .next/cache
+RUN bun run build
 
 # =================== Step 3: Production runtime ====================
 FROM docker.1ms.run/oven/bun:1 AS runner
