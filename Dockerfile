@@ -2,8 +2,8 @@
 FROM docker.1ms.run/oven/bun:1 AS deps
 WORKDIR /app
 
-# 拷贝 package.json 和 bun.lock / bun.lockb
-COPY package.json bun.lock bun.lockb ./
+# 拷贝 package.json 和 bun.lock
+COPY package.json bun.lock ./
 
 # 安装依赖，postinstall 会自动执行 prisma generate
 RUN bun install --registry=https://registry.npmmirror.com --frozen-lockfile
@@ -20,7 +20,6 @@ ENV NODE_ENV=production
 
 # 拷贝依赖
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/bun.lockb ./bun.lockb
 
 # 拷贝项目代码
 COPY . .
