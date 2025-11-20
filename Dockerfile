@@ -2,10 +2,10 @@
 FROM docker.1ms.run/oven/bun:1 AS deps
 WORKDIR /app
 
-# 拷贝 package.json 和 bun.lock
+# 只拷贝 package.json 和 bun.lock
 COPY package.json bun.lock ./
 
-# 安装依赖，postinstall 会自动执行 prisma generate
+# 安装依赖（postinstall 会自动触发 prisma generate，但此时没有 prisma 不会报错）
 RUN bun install --registry=https://registry.npmmirror.com --frozen-lockfile
 
 # =================== Step 2: Build project ==========================
@@ -18,13 +18,13 @@ ENV DATABASE_URL=$DATABASE_URL
 ENV DIRECT_URL=$DIRECT_URL
 ENV NODE_ENV=production
 
-# 拷贝依赖
+# 拷贝 deps 阶段的依赖
 COPY --from=deps /app/node_modules ./node_modules
 
-# 拷贝项目代码
+# 拷贝项目源码，包括 prisma
 COPY . .
 
-# 执行 Next.js 构建
+# 执行 Next.js 构建，postinstall 会生成 Prisma Client
 RUN bun run build && rm -rf .next/cache
 
 # =================== Step 3: Production runtime ====================
@@ -38,9 +38,8 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/package.json ./package.json
 
-# 只拷贝 Prisma Client 运行时需要的文件
+# 只拷贝 Prisma Client 运行时必要文件
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
 
