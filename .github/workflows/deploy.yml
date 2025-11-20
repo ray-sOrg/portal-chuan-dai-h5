@@ -121,7 +121,7 @@ jobs:
   # =============================
   deploy:
     name: 🚀 Deploy to Kubernetes
-    runs-on: [self-hosted, linux, x64]
+    runs-on: self-hosted
     needs: build
     environment: production
 
