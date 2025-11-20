@@ -4,6 +4,7 @@ WORKDIR /app
 
 # 只拷贝 package.json 和 bun.lock
 COPY package.json bun.lock ./
+COPY prisma ./prisma
 
 # 安装依赖（postinstall 会自动触发 prisma generate，但此时没有 prisma 不会报错）
 RUN bun install --registry=https://registry.npmmirror.com --frozen-lockfile
