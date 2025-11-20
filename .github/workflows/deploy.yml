@@ -35,7 +35,7 @@ jobs:
   # =============================
   build:
     name: 🏗️ Build & Push Docker Image
-    runs-on: [self-hosted, linux, x64]
+    runs-on: [self-hosted, ray-al]
 
     outputs:
       image: ${{ steps.meta.outputs.image }}
