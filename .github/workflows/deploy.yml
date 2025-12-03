@@ -90,8 +90,9 @@ jobs:
 
           echo "🛠 构建镜像: $IMAGE_NAME:$IMAGE_TAG"
 
-          # 构建镜像 (使用 --no-cache 确保依赖重新下载)
+          # 构建镜像 (强制构建 amd64 架构，适配 K8s 服务器)
           docker build \
+            --platform linux/amd64 \
             --no-cache \
             --build-arg DATABASE_URL=${{ secrets.SUPABASE_POSTGRES_DATABASE_URL }} \
             --build-arg DIRECT_URL=${{ secrets.SUPABASE_POSTGRES_DIRECT_URL }} \
