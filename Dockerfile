@@ -6,8 +6,8 @@ WORKDIR /app
 COPY package.json bun.lock ./
 COPY prisma ./prisma
 
-# 安装依赖（清除缓存确保完整性）
-RUN rm -rf ~/.bun/install/cache && bun install --frozen-lockfile
+# 安装依赖（强制使用官方源，覆盖 lockfile 中的镜像地址）
+RUN rm -rf ~/.bun/install/cache && bun install --registry=https://registry.npmjs.org --frozen-lockfile
 
 # =================== Step 2: Build project ==========================
 FROM docker.1ms.run/oven/bun:1 AS builder
