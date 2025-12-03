@@ -7,11 +7,6 @@ const nextConfig: NextConfig = {
   // 使用 standalone 模式，输出独立可运行的构建产物
   output: 'standalone',
 
-  // 构建时跳过 TypeScript 检查（CI 中单独运行 tsc，避免 OOM）
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-
   // 性能优化
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns'],
