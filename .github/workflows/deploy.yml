@@ -32,8 +32,8 @@ jobs:
   # 1️⃣ 构建镜像并推送到腾讯 TCR
   # =============================
   build:
-    name: ��️ Build & Push Docker Image
-    runs-on: self-hosted
+    name: 🛠️ Build & Push Docker Image
+    runs-on: ubuntu-latest
 
     outputs:
       image: ${{ steps.meta.outputs.image }}
@@ -46,15 +46,6 @@ jobs:
         with:
           repository: ${{ env.GITHUB_REPO }}
           fetch-depth: 0
-
-      # 缓存 Node 模块，加快 yarn install
-      - name: Cache Node modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            **/node_modules
-            ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
 
       # 登录腾讯云容器镜像服务 TCR
       - name: Login to Tencent Cloud Container Registry
@@ -90,10 +81,8 @@ jobs:
 
           echo "🛠 构建镜像: $IMAGE_NAME:$IMAGE_TAG"
 
-          # 构建镜像 (强制构建 amd64 架构，适配 K8s 服务器)
+          # 构建镜像 (标准构建，无需特殊参数)
           docker build \
-            --platform linux/amd64 \
-            --no-cache \
             --build-arg DATABASE_URL=${{ secrets.SUPABASE_POSTGRES_DATABASE_URL }} \
             --build-arg DIRECT_URL=${{ secrets.SUPABASE_POSTGRES_DIRECT_URL }} \
             -t $IMAGE_NAME:$IMAGE_TAG .
