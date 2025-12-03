@@ -1,13 +1,13 @@
 # =================== Step 1: Install dependencies ===================
-FROM oven/bun:1 AS deps
+FROM node:20-alpine AS deps
 WORKDIR /app
 
-# 只拷贝 package.json (不拷贝 bun.lock，避免 lockfile 导致的 integrity 问题)
+# 只拷贝 package.json
 COPY package.json ./
 COPY prisma ./prisma
 
-# 安装依赖 (使用淘宝源，避免代理不稳定)
-RUN bun install --no-save --registry=https://registry.npmmirror.com
+# 使用 npm 安装依赖 (比 bun 更容错，适合 QEMU 模拟环境)
+RUN npm install --registry=https://registry.npmmirror.com --legacy-peer-deps
 
 # =================== Step 2: Build project ==========================
 FROM oven/bun:1 AS builder
