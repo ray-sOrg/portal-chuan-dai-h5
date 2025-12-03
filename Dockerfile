@@ -7,7 +7,7 @@ COPY package.json bun.lock ./
 COPY prisma ./prisma
 
 # 安装依赖（postinstall 会自动触发 prisma generate，但此时没有 prisma 不会报错）
-RUN bun install --registry=https://registry.npmmirror.com --frozen-lockfile
+RUN bun install --frozen-lockfile
 
 # =================== Step 2: Build project ==========================
 FROM docker.1ms.run/oven/bun:1 AS builder
