@@ -4,6 +4,11 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const nextConfig: NextConfig = {
+  // 构建时跳过 TypeScript 检查（CI 中单独运行 tsc，避免 OOM）
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+
   // 性能优化
   experimental: {
     optimizePackageImports: ['lucide-react', 'date-fns'],
