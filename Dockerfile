@@ -2,8 +2,8 @@
 FROM oven/bun:1 AS deps
 WORKDIR /app
 
-# 只拷贝 package.json 和 bun.lock
-COPY package.json bun.lock ./
+# 只拷贝 package.json (不拷贝 bun.lock，避免 lockfile 导致的 integrity 问题)
+COPY package.json ./
 COPY prisma ./prisma
 
 # 安装依赖 (暂不强制校验 lockfile，避免跨平台 integrity 问题)
