@@ -6,8 +6,8 @@ WORKDIR /app
 COPY package.json bun.lock ./
 COPY prisma ./prisma
 
-# 安装依赖
-RUN bun install --frozen-lockfile
+# 安装依赖 (暂不强制校验 lockfile，避免跨平台 integrity 问题)
+RUN bun install --no-save
 
 # =================== Step 2: Build project ==========================
 FROM oven/bun:1 AS builder
