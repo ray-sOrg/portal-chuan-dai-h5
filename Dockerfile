@@ -34,15 +34,15 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# 拷贝 Next.js 构建产物
+# 拷贝 standalone 构建产物（包含所有必要的依赖）
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/package.json ./package.json
 
-# 只拷贝 Prisma Client 运行时必要文件
+# 拷贝 Prisma Client 运行时必要文件
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 EXPOSE 3000
 
-# 使用 Bun 启动 Next.js
-CMD ["bun", "run", "start"]
+# 使用 Bun 启动 standalone server
+CMD ["bun", "run", "server.js"]
