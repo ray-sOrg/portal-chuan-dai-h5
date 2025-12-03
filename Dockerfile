@@ -6,8 +6,8 @@ WORKDIR /app
 COPY package.json ./
 COPY prisma ./prisma
 
-# 安装依赖 (暂不强制校验 lockfile，避免跨平台 integrity 问题)
-RUN bun install --no-save
+# 安装依赖 (使用淘宝源，避免代理不稳定)
+RUN bun install --no-save --registry=https://registry.npmmirror.com
 
 # =================== Step 2: Build project ==========================
 FROM oven/bun:1 AS builder

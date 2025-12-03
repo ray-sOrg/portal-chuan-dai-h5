@@ -93,8 +93,6 @@ jobs:
           # 构建镜像 (使用 --no-cache 确保依赖重新下载)
           docker build \
             --no-cache \
-            --build-arg HTTP_PROXY=http://192.168.31.2:8001 \
-            --build-arg HTTPS_PROXY=http://192.168.31.2:8001 \
             --build-arg DATABASE_URL=${{ secrets.SUPABASE_POSTGRES_DATABASE_URL }} \
             --build-arg DIRECT_URL=${{ secrets.SUPABASE_POSTGRES_DIRECT_URL }} \
             -t $IMAGE_NAME:$IMAGE_TAG .
