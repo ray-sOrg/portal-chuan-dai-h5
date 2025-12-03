@@ -32,7 +32,7 @@ spec:
         app: portal-chuan-dai-h5
     spec:
       imagePullSecrets:
-        - name: aliyun-acr-secret
+        - name: tencent-tcr-secret
       containers:
         - name: portal-chuan-dai-h5
           image: __IMAGE_NAME__:__IMAGE_TAG__
