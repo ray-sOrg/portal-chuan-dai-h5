@@ -1,5 +1,5 @@
 # =================== Step 1: Install dependencies ===================
-FROM oven/bun:1 AS deps
+FROM oven/bun:1-debian AS deps
 WORKDIR /app
 
 # 拷贝 package.json 和 bun.lock
@@ -10,7 +10,7 @@ COPY prisma ./prisma
 RUN bun install --frozen-lockfile
 
 # =================== Step 2: Build project ==========================
-FROM oven/bun:1 AS builder
+FROM oven/bun:1-debian AS builder
 WORKDIR /app
 
 ARG DATABASE_URL
@@ -29,7 +29,7 @@ COPY . .
 RUN bun run build
 
 # =================== Step 3: Production runtime ====================
-FROM oven/bun:1 AS runner
+FROM oven/bun:1-debian AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
