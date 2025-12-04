@@ -43,7 +43,7 @@ export default function MenuPage() {
   return (
     <div className="flex flex-1 flex-col min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+      <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-50">
         <div className="container mx-auto flex items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">{t('common.menu')}</h1>
           <div className="flex items-center gap-2">
@@ -93,7 +93,6 @@ export default function MenuPage() {
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-semibold text-lg">{dish.name}</h3>
-                      <span className="text-lg font-bold text-primary">${dish.price}</span>
                     </div>
                     
                     {/* Tags */}

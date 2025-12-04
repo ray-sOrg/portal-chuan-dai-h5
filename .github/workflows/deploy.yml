@@ -47,6 +47,10 @@ jobs:
           repository: ${{ env.GITHUB_REPO }}
           fetch-depth: 0
 
+      # 设置 Docker Buildx (支持高级缓存)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       # 登录腾讯云容器镜像服务 TCR
       - name: Login to Tencent Cloud Container Registry
         uses: docker/login-action@v3
@@ -63,7 +67,6 @@ jobs:
           IMAGE_NAME=${{ env.TCR_REGISTRY }}/${{ env.TCR_NAMESPACE }}/${{ env.PROJECT_NAME }}
 
           # 镜像标签：build-构建号-commit短码
-          # 例如：build-123-abc1234
           IMAGE_TAG="build-${GITHUB_RUN_NUMBER}-$(git rev-parse --short HEAD)"
 
           # 输出给后续步骤
@@ -73,25 +76,21 @@ jobs:
           echo "🏷️  镜像标签: $IMAGE_TAG"
           echo "📤 推送地址: $IMAGE_NAME:$IMAGE_TAG"
 
-      # 构建并推送镜像
+      # 构建并推送镜像 (使用 BuildKit 缓存)
       - name: Build & Push Docker Image
-        run: |
-          IMAGE_NAME=${{ steps.meta.outputs.image }}
-          IMAGE_TAG=${{ steps.meta.outputs.tag }}
-
-          echo "🛠 构建镜像: $IMAGE_NAME:$IMAGE_TAG"
-
-          # 构建镜像 (标准构建，无需特殊参数)
-          docker build \
-            --build-arg DATABASE_URL=${{ secrets.SUPABASE_POSTGRES_DATABASE_URL }} \
-            --build-arg DIRECT_URL=${{ secrets.SUPABASE_POSTGRES_DIRECT_URL }} \
-            -t $IMAGE_NAME:$IMAGE_TAG .
-
-          echo "📤 推送镜像到腾讯云 TCR..."
-          docker push $IMAGE_NAME:$IMAGE_TAG
-
-          echo "✅ 镜像推送成功"
-          echo "   🚀 镜像地址: $IMAGE_NAME:$IMAGE_TAG"
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}
+          build-args: |
+            DATABASE_URL=${{ secrets.SUPABASE_POSTGRES_DATABASE_URL }}
+            DIRECT_URL=${{ secrets.SUPABASE_POSTGRES_DIRECT_URL }}
+          # 使用 GitHub Actions 缓存 (免费、快速)
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # 只构建 amd64 避免多架构浪费时间
+          platforms: linux/amd64
 
   # =============================
   # 2️⃣ 部署到 Kubernetes 集群
@@ -206,6 +205,3 @@ jobs:
           echo "📢 部署状态: $STATUS"
           echo "📦 镜像: $IMAGE:$TAG"
 
-      - name: Clean Docker BuildKit cache
-        run: |
-          docker builder prune -af

@@ -26,7 +26,7 @@ export default function PhotoPage() {
   return (
     <div className="flex flex-1 flex-col min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+      <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-50">
         <div className="container mx-auto flex items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">{t('photoWall.title')}</h1>
           <div className="flex items-center gap-2">

@@ -11,7 +11,7 @@ export default function Home() {
   
   return (
     <div className="flex flex-1 flex-col min-h-screen bg-background text-foreground">
-      <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+      <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-50">
         <div className="container mx-auto flex items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">{t('header.title')}</h1>
           <div className="flex items-center gap-2">
@@ -46,8 +46,8 @@ export default function Home() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { name: t('dishes.mapoTofu'), price: '$14.99', desc: t('dishes.mapoTofuDesc') },
-                    { name: t('dishes.danDanNoodles'), price: '$12.50', desc: t('dishes.danDanNoodlesDesc') }
+                    { name: t('dishes.mapoTofu'), desc: t('dishes.mapoTofuDesc') },
+                    { name: t('dishes.danDanNoodles'), desc: t('dishes.danDanNoodlesDesc') }
                   ].map((dish, index) => (
                     <div key={index} className="bg-card rounded-lg overflow-hidden border border-border">
                       <div className="aspect-square bg-muted flex items-center justify-center">
@@ -56,8 +56,7 @@ export default function Home() {
                       <div className="p-3">
                         <h4 className="font-medium mb-1">{dish.name}</h4>
                         <p className="text-xs text-muted-foreground mb-2">{dish.desc}</p>
-                        <div className="flex justify-between items-center">
-                          <span className="font-semibold text-primary">{dish.price}</span>
+                        <div className="flex justify-end items-center">
                           <button className="bg-primary text-primary-foreground w-6 h-6 rounded-full text-sm">+</button>
                         </div>
                       </div>

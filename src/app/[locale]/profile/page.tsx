@@ -65,7 +65,7 @@ export default function ProfilePage() {
   return (
     <div className="flex flex-1 flex-col min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+      <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-50">
         <div className="container mx-auto flex items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">{t('common.profile')}</h1>
           <div className="flex items-center gap-2">
@@ -113,7 +113,6 @@ export default function ProfilePage() {
                     <div className="flex-1">
                       <h4 className="font-medium">{item.name}</h4>
                       <p className="text-sm text-muted-foreground">{item.description}</p>
-                      <p className="text-primary font-semibold">${item.price}</p>
                     </div>
                     <button className="bg-secondary text-secondary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-secondary/90 transition-colors">
                       {t('profile.addToBag')}
@@ -141,7 +140,6 @@ export default function ProfilePage() {
                       <p className="font-medium">Order ID: {order.id}</p>
                       <p className="text-sm text-muted-foreground">{order.date}</p>
                     </div>
-                    <span className="text-lg font-semibold">${order.total}</span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">{order.items}</p>
                   <div className="flex gap-2">

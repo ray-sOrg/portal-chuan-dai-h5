@@ -55,12 +55,12 @@ export function LanguageToggle() {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-40" 
+            className="fixed inset-0 z-[100]" 
             onClick={() => setIsOpen(false)}
           />
           
           {/* Dropdown */}
-          <div className="absolute right-0 top-full mt-2 z-50 min-w-[140px] bg-background border border-border rounded-lg shadow-lg overflow-hidden">
+          <div className="absolute right-0 top-full mt-2 z-[101] min-w-[140px] bg-background border border-border rounded-lg shadow-lg overflow-hidden">
             {languages.map((language) => (
               <button
                 key={language.code}
