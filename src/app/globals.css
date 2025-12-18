@@ -11,97 +11,121 @@ html {
   );
 }
 
-/* Shadcn/UI 主题变量 - 川味+傣味配色方案 */
-:root {
+/* 川味主题 - 四川麻辣红 */
+/* 关键词：麻、辣、烟火气、厚重、不浮躁 */
+.sichuan {
   --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  /* Primary: #DC3545 (川菜红) */
-  --primary: oklch(0.577 0.245 27.325);
-  --primary-foreground: oklch(1 0 0);
-  /* Secondary: #FD7E14 (橙色) */
-  --secondary: oklch(0.724 0.184 52.234);
-  --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  /* Accent: #E06D28 (深橙色) */
-  --accent: oklch(0.681 0.162 45.834);
-  --accent-foreground: oklch(1 0 0);
-  /* Destructive/Danger: #DC3545 */
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.577 0.245 27.325);
-  /* Success: #28A745 (绿色点缀) */
-  --success: oklch(0.651 0.176 142.495);
-  --success-foreground: oklch(1 0 0);
-  /* Warning: #FFC107 (黄色) */
-  --warning: oklch(0.831 0.132 85.872);
-  --warning-foreground: oklch(0.141 0.005 285.823);
-  /* Info: #16a2b7 (青色) */
-  --info: oklch(0.631 0.089 200.123);
-  --info-foreground: oklch(1 0 0);
-  /* Chart colors - 川味主题色系 */
-  --chart-1: oklch(0.577 0.245 27.325); /* 主红色 */
-  --chart-2: oklch(0.724 0.184 52.234); /* 橙色 */
-  --chart-3: oklch(0.681 0.162 45.834); /* 深橙色 */
-  --chart-4: oklch(0.651 0.176 142.495); /* 绿色 */
-  --chart-5: oklch(0.831 0.132 85.872); /* 黄色 */
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.577 0.245 27.325);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.724 0.184 52.234);
-  --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.577 0.245 27.325);
+  /* 背景色：米白底色 #FAF7F2 */
+  --background: #FAF7F2;
+  /* 前景色：深炭灰正文 #2B2B2B */
+  --foreground: #2B2B2B;
+  /* 卡片 */
+  --card: #FAF7F2;
+  --card-foreground: #2B2B2B;
+  /* 弹出层 */
+  --popover: #FFFFFF;
+  --popover-foreground: #2B2B2B;
+  /* 主色：麻辣深红 #8C1D18 */
+  --primary: #8C1D18;
+  --primary-foreground: #FFFFFF;
+  /* 次要色：辣椒红 #B1120A */
+  --secondary: #B1120A;
+  --secondary-foreground: #FFFFFF;
+  /* 柔和色：浅红背景 #F7E6E4 */
+  --muted: #F7E6E4;
+  /* 次级文字灰 #6B6B6B */
+  --muted-foreground: #6B6B6B;
+  /* 强调色：深红/酱红 #5A0F0C */
+  --accent: #5A0F0C;
+  --accent-foreground: #FFFFFF;
+  /* 危险色：辣椒红 #B1120A */
+  --destructive: #B1120A;
+  /* 边框/分割线 #E5E0DA */
+  --border: #E5E0DA;
+  --input: #E5E0DA;
+  /* 焦点环：主色 */
+  --ring: #8C1D18;
+  /* 语义化颜色 */
+  --success: #28A745;
+  --success-foreground: #FFFFFF;
+  --warning: #FFC107;
+  --warning-foreground: #2B2B2B;
+  --info: #16A2B7;
+  --info-foreground: #FFFFFF;
+  /* 图表颜色 - 川味红系 */
+  --chart-1: #8C1D18; /* 主红 */
+  --chart-2: #B1120A; /* 辣椒红 */
+  --chart-3: #D43C2C; /* 亮红 */
+  --chart-4: #5A0F0C; /* 深红 */
+  --chart-5: #FFC107; /* 点缀黄 */
+  /* 侧边栏 */
+  --sidebar: #FAF7F2;
+  --sidebar-foreground: #2B2B2B;
+  --sidebar-primary: #8C1D18;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #B1120A;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #E5E0DA;
+  --sidebar-ring: #8C1D18;
 }
 
-.dark {
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.985 0 0);
-  /* Dark mode - 调亮的主色调 */
-  --primary: oklch(0.677 0.245 27.325);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.824 0.184 52.234);
-  --secondary-foreground: oklch(0.141 0.005 285.823);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.781 0.162 45.834);
-  --accent-foreground: oklch(0.141 0.005 285.823);
-  --destructive: oklch(0.677 0.245 27.325);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.677 0.245 27.325);
-  /* Dark mode semantic colors */
-  --success: oklch(0.751 0.176 142.495);
-  --success-foreground: oklch(0.141 0.005 285.823);
-  --warning: oklch(0.931 0.132 85.872);
-  --warning-foreground: oklch(0.141 0.005 285.823);
-  --info: oklch(0.731 0.089 200.123);
-  --info-foreground: oklch(1 0 0);
-  /* Dark mode chart colors */
-  --chart-1: oklch(0.677 0.245 27.325);
-  --chart-2: oklch(0.824 0.184 52.234);
-  --chart-3: oklch(0.781 0.162 45.834);
-  --chart-4: oklch(0.751 0.176 142.495);
-  --chart-5: oklch(0.931 0.132 85.872);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.677 0.245 27.325);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.824 0.184 52.234);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.677 0.245 27.325);
+
+/* 傣味主题 - 云南清爽绿 */
+/* 关键词：清新、野菜、薄荷、雨林、解腻 */
+.yunnan {
+  --radius: 0.65rem;
+  /* 背景色：暖白底色 #F6FBF8 */
+  --background: #F6FBF8;
+  /* 前景色：深灰正文 #263332 */
+  --foreground: #263332;
+  /* 卡片 */
+  --card: #F6FBF8;
+  --card-foreground: #263332;
+  /* 弹出层 */
+  --popover: #FFFFFF;
+  --popover-foreground: #263332;
+  /* 主色：清爽绿 #2F8F6B */
+  --primary: #2F8F6B;
+  --primary-foreground: #FFFFFF;
+  /* 次要色：薄荷绿 #3FB28A */
+  --secondary: #3FB28A;
+  --secondary-foreground: #FFFFFF;
+  /* 柔和色：浅绿背景 #E8F5EF */
+  --muted: #E8F5EF;
+  /* 次级文字 #6C7F79 */
+  --muted-foreground: #6C7F79;
+  /* 强调色：深绿/森林绿 #1E5E46 */
+  --accent: #1E5E46;
+  --accent-foreground: #FFFFFF;
+  /* 危险色 #DC3545 */
+  --destructive: #DC3545;
+  /* 边框/分割线 #DDEAE3 */
+  --border: #DDEAE3;
+  --input: #DDEAE3;
+  /* 焦点环：主色 */
+  --ring: #2F8F6B;
+  /* 语义化颜色 */
+  --success: #2F8F6B;
+  --success-foreground: #FFFFFF;
+  --warning: #FFC107;
+  --warning-foreground: #263332;
+  --info: #16A2B7;
+  --info-foreground: #FFFFFF;
+  /* 图表颜色 - 傣味绿系 */
+  --chart-1: #2F8F6B; /* 主绿 */
+  --chart-2: #3FB28A; /* 薄荷绿 */
+  --chart-3: #5BC4A1; /* 亮绿 */
+  --chart-4: #1E5E46; /* 深绿 */
+  --chart-5: #FFC107; /* 点缀黄 */
+  /* 侧边栏 */
+  --sidebar: #F6FBF8;
+  --sidebar-foreground: #263332;
+  --sidebar-primary: #2F8F6B;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #3FB28A;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #DDEAE3;
+  --sidebar-ring: #2F8F6B;
 }
 
 /* Tailwind CSS 主题集成 */
@@ -169,10 +193,6 @@ body {
   /* 文字自动换行 */
   word-wrap: break-word;
   word-break: break-word;
-
-  /* 禁止文本选择（可选，移动端常用） */
-  /* -webkit-user-select: none;
-  user-select: none; */
 
   /* 点击高亮取消（移动端） */
   -webkit-tap-highlight-color: transparent;

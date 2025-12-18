@@ -19,7 +19,9 @@ export const routing = defineRouting({
     '/home': '/home',
     '/menu': '/menu',
     '/photo': '/photo',
-    '/profile': '/profile'
+    '/profile': '/profile',
+    '/sign-in': '/sign-in',
+    '/sign-up': '/sign-up'
   }
 });
 

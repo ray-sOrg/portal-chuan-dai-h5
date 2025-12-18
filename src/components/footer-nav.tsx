@@ -69,26 +69,25 @@ export function FooterNav() {
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
-          
+
           return (
             <button
               key={item.id}
               onClick={() => handleTabClick(item.id)}
               className={cn(
-                'flex flex-col items-center justify-center py-2 px-3 rounded-lg transition-colors',
-                'min-w-[60px] text-xs font-medium',
+                'flex items-center justify-center p-3 rounded-lg transition-colors',
                 isActive
                   ? 'text-primary bg-primary/10'
                   : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
               )}
+              aria-label={t(item.labelKey)}
             >
-              <Icon 
+              <Icon
                 className={cn(
-                  'w-5 h-5 mb-1',
+                  'w-6 h-6',
                   isActive ? 'text-primary' : 'text-muted-foreground'
-                )} 
+                )}
               />
-              <span className="text-[10px] leading-tight">{t(item.labelKey)}</span>
             </button>
           );
         })}

@@ -1,16 +1,46 @@
 // This is your prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  // output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+// 用户表
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  account       String    @unique              // 账号（可以是手机号或用户名）
+  passwordHash  String                         // 密码哈希
+  nickname      String?                        // 昵称
+  avatar        String?                        // 头像 URL
+  gender        Gender?                        // 性别
+  birthday      DateTime?                      // 生日
+  bio           String?   @db.VarChar(200)     // 个人简介
+  createdAt     DateTime  @default(now())      // 创建时间
+  updatedAt     DateTime  @updatedAt           // 更新时间
+  lastLoginAt   DateTime?                      // 最后登录时间
+  
+  sessions      Session[]
+}
+
+// 性别枚举
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+// 会话表（Lucia Auth 需要）
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

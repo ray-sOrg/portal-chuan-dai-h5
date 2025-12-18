@@ -1,8 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { Moon, Sun } from "lucide-react";
+import { Flame, Leaf } from "lucide-react";
 import { useTheme } from "next-themes";
+
+// 主题配置
+const themeConfig = {
+  sichuan: {
+    icon: Flame,
+    label: "川味主题",
+    next: "yunnan",
+  },
+  yunnan: {
+    icon: Leaf,
+    label: "傣味主题",
+    next: "sichuan",
+  },
+} as const;
+
+type ThemeName = keyof typeof themeConfig;
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -17,17 +33,18 @@ export function ThemeToggle() {
     return null;
   }
 
+  const currentTheme = (theme as ThemeName) || "sichuan";
+  const config = themeConfig[currentTheme] || themeConfig.sichuan;
+  const Icon = config.icon;
+
   return (
     <button
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="rounded-lg p-2 hover:bg-accent"
-      aria-label="切换主题"
+      onClick={() => setTheme(config.next)}
+      className="rounded-lg p-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+      aria-label={`切换到${themeConfig[config.next].label}`}
+      title={config.label}
     >
-      {theme === "light" ? (
-        <Moon className="h-5 w-5" />
-      ) : (
-        <Sun className="h-5 w-5" />
-      )}
+      <Icon className="h-5 w-5" />
     </button>
   );
 }
