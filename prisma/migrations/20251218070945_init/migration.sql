@@ -4,7 +4,8 @@ CREATE TYPE "Gender" AS ENUM ('MALE', 'FEMALE', 'OTHER');
 -- CreateTable
 CREATE TABLE "User" (
     "id" UUID NOT NULL,
-    "phone" TEXT NOT NULL,
+    "account" TEXT NOT NULL,
+    "phone" TEXT,
     "passwordHash" TEXT NOT NULL,
     "nickname" TEXT,
     "avatar" TEXT,
@@ -26,6 +27,9 @@ CREATE TABLE "Session" (
 
     CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_account_key" ON "User"("account");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
