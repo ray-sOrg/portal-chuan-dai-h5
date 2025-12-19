@@ -43,12 +43,17 @@ export function SignInForm() {
 
             <SubmitButton label={t("signIn")} className="w-full" />
 
-            <p className="text-center text-sm text-muted-foreground">
-                {t("noAccount")}{" "}
-                <Link href={signUpPath} className="text-primary hover:underline">
-                    {t("signUp")}
+            <div className="flex items-center justify-between text-sm">
+                <Link href="/forgot-password" className="text-muted-foreground hover:text-primary">
+                    {t("forgotPassword")}
                 </Link>
-            </p>
+                <p className="text-muted-foreground">
+                    {t("noAccount")}{" "}
+                    <Link href={signUpPath} className="text-primary hover:underline">
+                        {t("signUp")}
+                    </Link>
+                </p>
+            </div>
         </Form>
     );
 }

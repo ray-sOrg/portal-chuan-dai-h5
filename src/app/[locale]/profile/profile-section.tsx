@@ -27,7 +27,7 @@ export function ProfileSection({ profile }: { profile: Profile }) {
         : null;
 
     return (
-        <section className="bg-card rounded-lg p-6 border border-border">
+        <section className="card-base p-6">
             <div className="flex items-center gap-4 mb-4">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden">
                     {profile.avatar ? (

@@ -23,11 +23,12 @@ export function SignUpForm() {
                 <input
                     name="account"
                     type="text"
-                    maxLength={20}
+                    maxLength={16}
                     placeholder={t("accountPlaceholder")}
                     defaultValue={actionState.payload?.get("account") as string}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
+                <p className="text-xs text-muted-foreground mt-1">{t("accountRule")}</p>
                 <FieldError name="account" actionState={actionState} />
             </div>
 
@@ -35,10 +36,12 @@ export function SignUpForm() {
                 <input
                     name="password"
                     type="password"
+                    maxLength={16}
                     placeholder={t("passwordPlaceholder")}
                     defaultValue={actionState.payload?.get("password") as string}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
+                <p className="text-xs text-muted-foreground mt-1">{t("passwordRule")}</p>
                 <FieldError name="password" actionState={actionState} />
             </div>
 
@@ -46,6 +49,7 @@ export function SignUpForm() {
                 <input
                     name="confirmPassword"
                     type="password"
+                    maxLength={16}
                     placeholder={t("confirmPasswordPlaceholder")}
                     defaultValue={actionState.payload?.get("confirmPassword") as string}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"

@@ -15,12 +15,12 @@ html {
 /* 关键词：麻、辣、烟火气、厚重、不浮躁 */
 .sichuan {
   --radius: 0.65rem;
-  /* 背景色：米白底色 #FAF7F2 */
-  --background: #FAF7F2;
+  /* 背景色：暖白底色 #FFFAF5 */
+  --background: #FFFAF5;
   /* 前景色：深炭灰正文 #2B2B2B */
   --foreground: #2B2B2B;
   /* 卡片 */
-  --card: #FAF7F2;
+  --card: #FFFAF5;
   --card-foreground: #2B2B2B;
   /* 弹出层 */
   --popover: #FFFFFF;
@@ -40,9 +40,9 @@ html {
   --accent-foreground: #FFFFFF;
   /* 危险色：辣椒红 #B1120A */
   --destructive: #B1120A;
-  /* 边框/分割线 #E5E0DA */
-  --border: #E5E0DA;
-  --input: #E5E0DA;
+  /* 边框/分割线 - 更淡 */
+  --border: #EDE9E4;
+  --input: #EDE9E4;
   /* 焦点环：主色 */
   --ring: #8C1D18;
   /* 语义化颜色 */
@@ -59,13 +59,13 @@ html {
   --chart-4: #5A0F0C; /* 深红 */
   --chart-5: #FFC107; /* 点缀黄 */
   /* 侧边栏 */
-  --sidebar: #FAF7F2;
+  --sidebar: #FFFAF5;
   --sidebar-foreground: #2B2B2B;
   --sidebar-primary: #8C1D18;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #B1120A;
   --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #E5E0DA;
+  --sidebar-border: #EDE9E4;
   --sidebar-ring: #8C1D18;
 }
 
@@ -99,9 +99,9 @@ html {
   --accent-foreground: #FFFFFF;
   /* 危险色 #DC3545 */
   --destructive: #DC3545;
-  /* 边框/分割线 #DDEAE3 */
-  --border: #DDEAE3;
-  --input: #DDEAE3;
+  /* 边框/分割线 - 更淡 */
+  --border: #E5F0EA;
+  --input: #E5F0EA;
   /* 焦点环：主色 */
   --ring: #2F8F6B;
   /* 语义化颜色 */
@@ -124,7 +124,7 @@ html {
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #3FB28A;
   --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #DDEAE3;
+  --sidebar-border: #E5F0EA;
   --sidebar-ring: #2F8F6B;
 }
 
@@ -170,6 +170,18 @@ html {
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+}
+
+/* 统一卡片样式 - 方便全局修改 */
+.card-base {
+  background-color: white;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.dark .card-base {
+  background-color: #18181b; /* zinc-900 */
 }
 
 body {

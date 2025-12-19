@@ -1,7 +1,7 @@
 "use server";
 
 import { verify } from "@node-rs/argon2";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { z } from "zod";
 
 import {
@@ -16,11 +16,13 @@ import { prisma } from "@/lib/prisma";
 const signInSchema = z.object({
   account: z
     .string()
-    .min(1, "请输入账号"),
+    .min(3, "账号至少3位")
+    .max(16, "账号最多16位")
+    .regex(/^[a-zA-Z0-9]+$/, "账号只能包含字母和数字"),
   password: z
     .string()
-    .min(6, "密码至少6位")
-    .max(20, "密码最多20位"),
+    .min(3, "密码至少3位")
+    .max(16, "密码最多16位"),
 });
 
 export const signIn = async (
@@ -58,14 +60,24 @@ export const signIn = async (
       sessionCookie.attributes
     );
 
-    // 更新最后登录时间
+    // 获取客户端IP
+    const headersList = await headers();
+    const clientIp =
+      headersList.get("x-forwarded-for")?.split(",")[0] ||
+      headersList.get("x-real-ip") ||
+      "unknown";
+
+    // 更新最后登录时间和IP
     await prisma.user.update({
       where: { id: user.id },
-      data: { lastLoginAt: new Date() },
+      data: {
+        lastLoginAt: new Date(),
+        lastLoginIp: clientIp,
+      },
     });
   } catch (error) {
     return formErrorToActionState(error, formData);
   }
 
-  return redirect({ href: "/home", locale: "zh" });
+  return redirect({ href: "/profile", locale: "zh" });
 };

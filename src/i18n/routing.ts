@@ -20,8 +20,10 @@ export const routing = defineRouting({
     '/menu': '/menu',
     '/photo': '/photo',
     '/profile': '/profile',
+    '/profile/change-password': '/profile/change-password',
     '/sign-in': '/sign-in',
-    '/sign-up': '/sign-up'
+    '/sign-up': '/sign-up',
+    '/forgot-password': '/forgot-password'
   }
 });
 

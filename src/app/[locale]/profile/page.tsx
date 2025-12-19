@@ -8,6 +8,7 @@ import {
   Bell,
   Shield,
   ChevronRight,
+  Key,
 } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import { Link } from "@/i18n/routing";
@@ -61,7 +62,7 @@ function GuestContent() {
   const t = useTranslations("auth");
 
   return (
-    <section className="bg-card rounded-lg p-6 border border-border text-center">
+    <section className="card-base p-6 text-center">
       <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
         <User className="w-8 h-8 text-primary" />
       </div>
@@ -86,6 +87,7 @@ type Profile = {
   bio: string | null;
   createdAt: Date;
   lastLoginAt: Date | null;
+  lastLoginIp: string | null;
 };
 
 function AuthenticatedContent({ profile }: { profile: Profile }) {
@@ -99,34 +101,53 @@ function AuthenticatedContent({ profile }: { profile: Profile }) {
       </Suspense>
 
       {/* My Favorites */}
-      <section>
+      <section className="card-base p-4">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Heart className="w-5 h-5 text-primary" />
           {t("profile.myFavorites")}
         </h3>
-        <div className="bg-card rounded-lg p-4 border border-border text-center text-muted-foreground">
+        <div className="text-center text-muted-foreground">
           暂无收藏
         </div>
       </section>
 
       {/* Order History */}
-      <section>
+      <section className="card-base p-4">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Clock className="w-5 h-5 text-primary" />
           {t("profile.orderHistory")}
         </h3>
-        <div className="bg-card rounded-lg p-4 border border-border text-center text-muted-foreground">
+        <div className="text-center text-muted-foreground">
           暂无订单
         </div>
       </section>
 
+      {/* Last Login Info */}
+      {profile.lastLoginAt && (
+        <section className="card-base p-4">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="w-4 h-4" />
+            <span>{t("auth.lastLoginTime")}: {new Date(profile.lastLoginAt).toLocaleString()}</span>
+          </div>
+          {profile.lastLoginIp && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+              <Shield className="w-4 h-4" />
+              <span>{t("auth.lastLoginIp")}: {profile.lastLoginIp}</span>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* App Settings */}
-      <section>
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+      <section className="card-base overflow-hidden">
+        <h3 className="text-lg font-semibold p-4 flex items-center gap-2">
           <Settings className="w-5 h-5 text-primary" />
           {t("profile.appSettings")}
         </h3>
-        <div className="bg-card rounded-lg border border-border overflow-hidden">
+        <div>
+          <Link href="/profile/change-password" className="block">
+            <SettingsItem icon={Key} label={t("auth.changePassword")} />
+          </Link>
           <SettingsItem icon={Settings} label={t("profile.generalSettings")} />
           <SettingsItem icon={Bell} label={t("profile.notifications")} />
           <SettingsItem icon={Shield} label={t("profile.privacyPolicy")} />

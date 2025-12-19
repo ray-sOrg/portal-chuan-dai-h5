@@ -1,7 +1,6 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import {
@@ -9,9 +8,9 @@ import {
   formErrorToActionState,
   toActionState,
 } from "@/components/form/utils/to-action-state";
+import { redirect } from "@/i18n/routing";
 import { lucia } from "@/lib/lucia";
 import { prisma } from "@/lib/prisma";
-import { homePath } from "@/paths";
 
 import { verifyOtp } from "../utils/otp-store";
 
@@ -67,5 +66,5 @@ export const signInOtp = async (
     return formErrorToActionState(error, formData);
   }
 
-  redirect(homePath);
+  return redirect({ href: "/profile", locale: "zh" });
 };

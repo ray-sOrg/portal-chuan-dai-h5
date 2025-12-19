@@ -24,11 +24,11 @@ export function LanguageToggle() {
 
   const handleLanguageChange = (newLocale: string) => {
     const supportedLocale = newLocale as SupportedLocale;
-    
+
     // 更新语言偏好存储
     setPreferredLocale(supportedLocale);
     updateLastUsedLocale(supportedLocale);
-    
+
     // 路由跳转
     router.replace(pathname, { locale: newLocale });
     setIsOpen(false);
@@ -54,13 +54,13 @@ export function LanguageToggle() {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-[100]" 
+          <div
+            className="fixed inset-0 z-[100]"
             onClick={() => setIsOpen(false)}
           />
-          
+
           {/* Dropdown */}
-          <div className="absolute right-0 top-full mt-2 z-[101] min-w-[140px] bg-background border border-border rounded-lg shadow-lg overflow-hidden">
+          <div className="card-base absolute right-0 top-full mt-2 z-[101] min-w-[140px] overflow-hidden">
             {languages.map((language) => (
               <button
                 key={language.code}
@@ -68,8 +68,8 @@ export function LanguageToggle() {
                 className={cn(
                   'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
                   'hover:bg-primary/5 hover:text-primary',
-                  locale === language.code 
-                    ? 'bg-primary/10 text-primary font-medium' 
+                  locale === language.code
+                    ? 'bg-primary/10 text-primary font-medium'
                     : 'text-foreground'
                 )}
               >

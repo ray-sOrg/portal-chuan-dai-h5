@@ -11,23 +11,9 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// 用户表
-model User {
-  id            String    @id @default(uuid()) @db.Uuid
-  account       String    @unique              // 账号（可以是手机号或用户名）
-  phone         String?   @unique              // 手机号
-  passwordHash  String                         // 密码哈希
-  nickname      String?                        // 昵称
-  avatar        String?                        // 头像 URL
-  gender        Gender?                        // 性别
-  birthday      DateTime?                      // 生日
-  bio           String?   @db.VarChar(200)     // 个人简介
-  createdAt     DateTime  @default(now())      // 创建时间
-  updatedAt     DateTime  @updatedAt           // 更新时间
-  lastLoginAt   DateTime?                      // 最后登录时间
-  
-  sessions      Session[]
-}
+// ============================================================================
+// 枚举定义 (Enums)
+// ============================================================================
 
 // 性别枚举
 enum Gender {
@@ -36,12 +22,191 @@ enum Gender {
   OTHER
 }
 
+// 菜品分类枚举
+enum DishCategory {
+  APPETIZER    // 开胃菜
+  MAIN_COURSE  // 主菜
+  SOUP         // 汤品
+  DESSERT      // 甜点
+  BEVERAGE     // 饮品
+}
+
+// 情绪标签枚举
+enum EmotionTag {
+  HAPPY       // 开心
+  EXCITED     // 兴奋
+  WARM        // 温馨
+  NOSTALGIC   // 怀旧
+  FUNNY       // 搞笑
+}
+
+// ============================================================================
+// 用户模块 (User Module)
+// ============================================================================
+
+// 用户表
+model User {
+  id            String     @id @default(uuid()) @db.Uuid
+  account       String     @unique              // 账号（3-16位，只能数字和字母）
+  passwordHash  String                          // 密码哈希
+  phone         String?    @unique              // 手机号（可选，后期绑定）
+  nickname      String?                         // 昵称
+  avatar        String?                         // 头像 URL
+  gender        Gender?                         // 性别
+  birthday      DateTime?                       // 生日
+  bio           String?    @db.VarChar(200)     // 个人简介
+  createdAt     DateTime   @default(now())      // 创建时间
+  updatedAt     DateTime   @updatedAt           // 更新时间
+  lastLoginAt   DateTime?                       // 最后登录时间
+  lastLoginIp   String?                         // 最后登录IP
+
+  // 关联
+  sessions       Session[]
+  favorites      Favorite[]
+  photos         Photo[]
+  photoFavorites PhotoFavorite[]
+  photoComments  PhotoComment[]
+}
+
+
 // 会话表（Lucia Auth 需要）
 model Session {
   id        String   @id @default(cuid())
   expiresAt DateTime
   userId    String   @db.Uuid
+
+  // 关联
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
+
+// ============================================================================
+// 菜品模块 (Dish Module)
+// ============================================================================
+
+// 菜品表
+model Dish {
+  id           String       @id @default(uuid()) @db.Uuid
+  name         String                            // 菜品名称
+  nameEn       String?                           // 英文名称
+  description  String?      @db.VarChar(500)     // 描述
+  descEn       String?      @db.VarChar(500)     // 英文描述
+  price        Decimal      @db.Decimal(10, 2)   // 价格
+  image        String?                           // 图片URL
+  category     DishCategory                      // 分类
+  isSpicy      Boolean      @default(false)      // 是否辣
+  isVegetarian Boolean      @default(false)      // 是否素食
+  isAvailable  Boolean      @default(true)       // 是否可用
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // 关联
+  favorites    Favorite[]
+}
+
+// 收藏表（用户-菜品关联）
+model Favorite {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  dishId    String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  // 关联
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dish      Dish     @relation(fields: [dishId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dishId])
+  @@index([userId])
+  @@index([dishId])
+}
+
+// ============================================================================
+// 照片模块 (Photo Module)
+// ============================================================================
+
+// 聚会表
+model Gathering {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String                           // 聚会标题
+  description String?  @db.VarChar(500)        // 描述
+  date        DateTime                         // 聚会日期
+  location    String?                          // 地点
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关联
+  photos      Photo[]
+}
+
+// 照片表
+model Photo {
+  id           String       @id @default(uuid()) @db.Uuid
+  title        String                           // 标题
+  description  String?      @db.VarChar(500)    // 描述
+  url          String                           // 原图 URL
+  thumbnailUrl String?                          // 缩略图 URL
+  mediumUrl    String?                          // 中等尺寸 URL
+  width        Int?                             // 原图宽度
+  height       Int?                             // 原图高度
+  emotionTag   EmotionTag?                      // 情绪标签（可选）
+  gatheringId  String?      @db.Uuid            // 所属聚会（可选）
+  uploaderId   String       @db.Uuid            // 上传者
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // 关联
+  gathering    Gathering?   @relation(fields: [gatheringId], references: [id])
+  uploader     User         @relation(fields: [uploaderId], references: [id])
+  favorites    PhotoFavorite[]
+  comments     PhotoComment[]
+
+  @@index([uploaderId])
+  @@index([gatheringId])
+  @@index([createdAt])
+}
+
+// 照片收藏表
+model PhotoFavorite {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  photoId   String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  // 关联
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, photoId])
+  @@index([userId])
+  @@index([photoId])
+}
+
+// 照片评论表
+model PhotoComment {
+  id        String   @id @default(uuid()) @db.Uuid
+  content   String   @db.VarChar(500)          // 评论内容
+  photoId   String   @db.Uuid
+  authorId  String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关联
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([photoId])
+  @@index([authorId])
+}
+
+// ============================================================================
+// 订单模块 (Order Module) - 待开发
+// ============================================================================
+
+// TODO: Order, OrderItem 等表
+
+// ============================================================================
+// 其他模块 - 待开发
+// ============================================================================
+
+// TODO: 评论、优惠券、地址等

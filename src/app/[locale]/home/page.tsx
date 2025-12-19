@@ -5,10 +5,11 @@ import { Placeholder } from "@/components/placeholder";
 import { Spinner } from "@/components/spinner";
 import { ThemeToggle } from "@/components/theme";
 import { LanguageToggle } from "@/components/language-toggle";
+import { PersonalRecommendations } from "@/features/dish/components";
 
 export default function Home() {
   const t = useTranslations();
-  
+
   return (
     <div className="flex flex-1 flex-col min-h-screen bg-background text-foreground">
       <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-50">
@@ -39,7 +40,7 @@ export default function Home() {
               </section>
 
               {/* Featured Dishes */}
-              <section>
+              <section className="card-base p-4">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-xl font-semibold">{t('home.featured.title')}</h3>
                   <button className="text-primary font-medium">{t('home.featured.viewAll')}</button>
@@ -64,6 +65,11 @@ export default function Home() {
                   ))}
                 </div>
               </section>
+
+              {/* Personal Recommendations */}
+              <Suspense fallback={<Spinner />}>
+                <PersonalRecommendations />
+              </Suspense>
 
               {/* Latest News */}
               <section>

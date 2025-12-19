@@ -34,8 +34,8 @@ function SignInPageContent() {
             </header>
 
             {/* Content */}
-            <main className="flex-1 flex flex-col items-center justify-center px-4 py-8">
-                <div className="w-full max-w-sm">
+            <main className="flex-1 flex flex-col items-center px-4 py-8">
+                <div className="w-full max-w-sm card-base p-6">
                     <h2 className="text-2xl font-bold text-center mb-2">{t("auth.signInTitle")}</h2>
                     <p className="text-muted-foreground text-center mb-8">{t("auth.signInSubtitle")}</p>
                     <SignInForm />

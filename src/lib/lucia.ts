@@ -1,11 +1,12 @@
 import { PrismaAdapter } from "@lucia-auth/adapter-prisma";
-import { Lucia } from "lucia";
+import { Lucia, TimeSpan } from "lucia";
 
 import { prisma } from "./prisma";
 
 const adapter = new PrismaAdapter(prisma.session, prisma.user);
 
 export const lucia = new Lucia(adapter, {
+  sessionExpiresIn: new TimeSpan(7, "d"), // 会话7天过期
   sessionCookie: {
     expires: false,
     attributes: {

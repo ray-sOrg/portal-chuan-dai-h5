@@ -1,10 +1,10 @@
-"use server";
+import { cache } from "react";
 
 import { prisma } from "@/lib/prisma";
 
 import { getAuth } from "./get-auth";
 
-export const getUserProfile = async () => {
+export const getUserProfile = cache(async () => {
   const { user } = await getAuth();
 
   if (!user) {
@@ -23,8 +23,9 @@ export const getUserProfile = async () => {
       bio: true,
       createdAt: true,
       lastLoginAt: true,
+      lastLoginIp: true,
     },
   });
 
   return profile;
-};
+});

@@ -10,6 +10,16 @@
     "phonePlaceholder": "Enter phone number",
     "passwordPlaceholder": "Enter password",
     "confirmPasswordPlaceholder": "Confirm password",
+    "accountRule": "3-16 characters, letters and numbers only",
+    "passwordRule": "3-16 characters",
+    "forgotPassword": "Forgot Password",
+    "contactAdmin": "Please contact admin to reset password",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "lastLoginTime": "Last Login",
+    "lastLoginIp": "Last Login IP",
     "codePlaceholder": "Enter verification code",
     "getCode": "Get Code",
     "useOtpLogin": "Use verification code",
@@ -61,6 +71,12 @@
       "chefInterview": "Meet Chef Li: The Master Behind Our Authentic Flavors",
       "chefInterviewDesc": "An exclusive interview with our head chef about his passion for"
     },
+    "personalRecommend": {
+      "title": "Personal Recommendations",
+      "loginTip": "Sign in to see personalized recommendations",
+      "noFavorites": "No favorites yet, go add some dishes",
+      "basedOnFavorites": "Based on your favorites"
+    },
     "quickLinks": {
       "title": "Quick Links",
       "myOrders": "My Orders",
@@ -110,6 +126,12 @@
   },
   "photoWall": {
     "title": "Photo Wall",
+    "upload": "Upload Photo",
+    "noPhotos": "No photos yet",
+    "loadMore": "Load More",
+    "loading": "Loading...",
+    "favorite": "Favorite",
+    "unfavorite": "Unfavorite",
     "exploreCuisine": "Explore Cuisine & Culture",
     "themedCollections": "Themed Collections",
     "streetFoodDelights": "Street Food Delights",

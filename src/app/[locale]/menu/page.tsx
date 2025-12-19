@@ -39,7 +39,7 @@ const categories = [
 
 export default function MenuPage() {
   const t = useTranslations();
-  
+
   return (
     <div className="flex flex-1 flex-col min-h-screen bg-background text-foreground">
       {/* Header */}
@@ -61,11 +61,10 @@ export default function MenuPage() {
             {categories.map((category) => (
               <button
                 key={category.id}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                  category.id === 'mainCourses'
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${category.id === 'mainCourses'
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary'
-                }`}
+                  }`}
               >
                 {t(category.labelKey)}
               </button>
@@ -78,7 +77,7 @@ export default function MenuPage() {
               {mockDishes.map((dish) => (
                 <div
                   key={dish.id}
-                  className="bg-card rounded-lg overflow-hidden border border-border shadow-sm"
+                  className="card-base overflow-hidden"
                 >
                   <div className="aspect-video bg-muted relative">
                     <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
@@ -89,34 +88,33 @@ export default function MenuPage() {
                       ♡
                     </button>
                   </div>
-                  
+
                   <div className="p-4">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-semibold text-lg">{dish.name}</h3>
                     </div>
-                    
+
                     {/* Tags */}
                     <div className="flex gap-2 mb-3">
                       {dish.tags.map((tag) => (
                         <span
                           key={tag}
-                          className={`px-2 py-1 text-xs rounded-full ${
-                            tag === 'spicy'
+                          className={`px-2 py-1 text-xs rounded-full ${tag === 'spicy'
                               ? 'bg-destructive/10 text-destructive'
                               : tag === 'chicken'
-                              ? 'bg-secondary/10 text-secondary'
-                              : 'bg-success/10 text-success'
-                          }`}
+                                ? 'bg-secondary/10 text-secondary'
+                                : 'bg-success/10 text-success'
+                            }`}
                         >
                           {t(`menu.tags.${tag}`)}
                         </span>
                       ))}
                     </div>
-                    
+
                     <p className="text-muted-foreground text-sm mb-4">
                       {dish.description}
                     </p>
-                    
+
                     <button className="w-full bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
                       + {t('menu.add')}
                     </button>
