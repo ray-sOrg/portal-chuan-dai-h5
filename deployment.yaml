@@ -49,6 +49,18 @@ spec:
                 secretKeyRef:
                   name: supabase-secret-portal-chuan-dai-h5
                   key: DIRECT_URL
+            - name: COS_SECRET_ID
+              valueFrom:
+                secretKeyRef:
+                  name: cos-secret-portal-chuan-dai-h5
+                  key: COS_SECRET_ID
+            - name: COS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cos-secret-portal-chuan-dai-h5
+                  key: COS_SECRET_KEY
+            - name: COS_REGION
+              value: "ap-chengdu"
           readinessProbe:
             httpGet:
               path: /api/health

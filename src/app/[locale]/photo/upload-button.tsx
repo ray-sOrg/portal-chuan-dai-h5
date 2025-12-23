@@ -1,9 +1,9 @@
 'use client';
 
 import { Camera } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
+import { useRequireAuth } from '@/hooks/use-require-auth';
 
 interface UploadButtonProps {
     isLoggedIn: boolean;
@@ -11,15 +11,11 @@ interface UploadButtonProps {
 
 export function UploadButton({ isLoggedIn }: UploadButtonProps) {
     const t = useTranslations();
-    const router = useRouter();
     const locale = useLocale();
+    const { navigateWithAuth } = useRequireAuth({ isLoggedIn });
 
     const handleClick = () => {
-        if (isLoggedIn) {
-            router.push(`/${locale}/photo/upload`);
-        } else {
-            router.push(`/${locale}/sign-in`);
-        }
+        navigateWithAuth(`/${locale}/photo/upload`);
     };
 
     return (

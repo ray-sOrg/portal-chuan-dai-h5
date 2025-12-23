@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getAuth } from '@/features/auth/queries/get-auth';
-import { getGatherings } from '@/features/photo/actions';
 import { UploadForm } from './upload-form';
 
 export default async function PhotoUploadPage() {
@@ -12,9 +11,6 @@ export default async function PhotoUploadPage() {
     if (!user) {
         redirect('/sign-in');
     }
-
-    // 获取聚会列表
-    const gatherings = await getGatherings();
 
     return (
         <div className="flex flex-1 flex-col min-h-screen bg-background text-foreground">
@@ -28,7 +24,7 @@ export default async function PhotoUploadPage() {
             {/* Main Content */}
             <main className="flex-1 p-4 pb-20">
                 <div className="container mx-auto max-w-lg">
-                    <UploadForm gatherings={gatherings} />
+                    <UploadForm />
                 </div>
             </main>
         </div>

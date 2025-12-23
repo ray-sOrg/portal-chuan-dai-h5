@@ -2,10 +2,23 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Heart, Calendar, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { togglePhotoFavorite } from '@/features/photo/actions/toggle-favorite';
 import type { PhotoDetail } from '@/features/photo/types';
+
+// COS 万象图片处理参数 - 详情页用 1080 宽度，适合手机高清显示
+const COS_DETAIL_PARAMS = '?imageMogr2/thumbnail/1080x';
+
+// 获取详情页图片 URL（添加万象压缩参数）
+function getDetailImageUrl(url: string | null): string | null {
+    if (!url) return null;
+    if (url.includes('img.tt829.cn') && !url.includes('?')) {
+        return url + COS_DETAIL_PARAMS;
+    }
+    return url;
+}
 
 interface PhotoDetailViewProps {
     photo: PhotoDetail;
@@ -51,11 +64,14 @@ export function PhotoDetailView({ photo, isLoggedIn }: PhotoDetailViewProps) {
     return (
         <div className="space-y-4">
             {/* 大图展示 */}
-            <div className="relative bg-black">
-                <img
-                    src={photo.mediumUrl || photo.url}
+            <div className="relative bg-black aspect-[3/4] max-h-[60vh]">
+                <Image
+                    src={getDetailImageUrl(photo.mediumUrl || photo.url) || ''}
                     alt={photo.title}
-                    className="w-full max-h-[60vh] object-contain"
+                    fill
+                    sizes="100vw"
+                    className="object-contain"
+                    priority
                 />
             </div>
 
@@ -132,12 +148,14 @@ export function PhotoDetailView({ photo, isLoggedIn }: PhotoDetailViewProps) {
 
                 {/* 上传者信息 */}
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                         {photo.uploader.avatar ? (
-                            <img
+                            <Image
                                 src={photo.uploader.avatar}
                                 alt={photo.uploader.nickname || '用户'}
-                                className="w-full h-full rounded-full object-cover"
+                                width={40}
+                                height={40}
+                                className="object-cover"
                             />
                         ) : (
                             <span className="text-lg">👤</span>

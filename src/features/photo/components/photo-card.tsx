@@ -4,11 +4,15 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Heart, ImageOff } from 'lucide-react';
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { PhotoListItem } from '../types';
 
 // 允许的图片域名列表（与 next.config.ts 保持同步）
 const ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'img.tt829.cn'];
+
+// COS 万象图片处理参数
+const COS_THUMBNAIL_PARAMS = '?imageMogr2/thumbnail/400x'; // 列表页缩略图
 
 // 检查 URL 是否可以使用 Next.js Image
 function isValidImageUrl(url: string): boolean {
@@ -21,6 +25,16 @@ function isValidImageUrl(url: string): boolean {
     }
 }
 
+// 获取缩略图 URL（如果是 COS 图片，添加万象参数）
+function getThumbnailUrl(url: string | null): string | null {
+    if (!url) return null;
+    // 如果已经有缩略图 URL 或者是 COS 图片，添加万象参数
+    if (url.includes('img.tt829.cn') && !url.includes('?')) {
+        return url + COS_THUMBNAIL_PARAMS;
+    }
+    return url;
+}
+
 interface PhotoCardProps {
     photo: PhotoListItem;
     onFavoriteClick?: (photoId: string) => void;
@@ -28,11 +42,13 @@ interface PhotoCardProps {
 }
 
 export function PhotoCard({ photo, onFavoriteClick, isLoading }: PhotoCardProps) {
+    const locale = useLocale();
     const [imageError, setImageError] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [realDimensions, setRealDimensions] = useState<{ width: number; height: number } | null>(null);
 
-    const imageUrl = photo.thumbnailUrl || photo.url;
+    // 使用万象参数生成缩略图 URL
+    const imageUrl = getThumbnailUrl(photo.thumbnailUrl) || getThumbnailUrl(photo.url);
     const canUseNextImage = isValidImageUrl(imageUrl || '');
 
     // 优先使用真实尺寸，其次使用数据库尺寸，最后使用默认 3:4
@@ -57,7 +73,7 @@ export function PhotoCard({ photo, onFavoriteClick, isLoading }: PhotoCardProps)
     };
 
     return (
-        <Link href={`/photo/${photo.id}`} className="block">
+        <Link href={`/${locale}/photo/${photo.id}`} className="block">
             <div className="card-base overflow-hidden group">
                 {/* 图片容器 - 根据宽高比动态设置高度形成瀑布流 */}
                 <div

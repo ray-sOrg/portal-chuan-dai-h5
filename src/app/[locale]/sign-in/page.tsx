@@ -6,18 +6,24 @@ import { LanguageToggle } from "@/components/language-toggle";
 import { getAuth } from "@/features/auth/queries/get-auth";
 import { redirect } from "@/i18n/routing";
 
-export default async function SignInPage() {
-    const { user } = await getAuth();
-
-    // 已登录用户重定向到首页
-    if (user) {
-        redirect({ href: "/home", locale: "zh" });
-    }
-
-    return <SignInPageContent />;
+interface SignInPageProps {
+    searchParams: Promise<{ redirect?: string }>;
 }
 
-function SignInPageContent() {
+export default async function SignInPage({ searchParams }: SignInPageProps) {
+    const { user } = await getAuth();
+    const params = await searchParams;
+    const redirectTo = params.redirect || '/profile';
+
+    // 已登录用户重定向
+    if (user) {
+        redirect({ href: redirectTo, locale: "zh" });
+    }
+
+    return <SignInPageContent redirectTo={redirectTo} />;
+}
+
+function SignInPageContent({ redirectTo }: { redirectTo: string }) {
     const t = useTranslations();
 
     return (
@@ -38,7 +44,7 @@ function SignInPageContent() {
                 <div className="w-full max-w-sm card-base p-6">
                     <h2 className="text-2xl font-bold text-center mb-2">{t("auth.signInTitle")}</h2>
                     <p className="text-muted-foreground text-center mb-8">{t("auth.signInSubtitle")}</p>
-                    <SignInForm />
+                    <SignInForm redirectTo={redirectTo} />
                 </div>
             </main>
         </div>

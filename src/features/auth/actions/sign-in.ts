@@ -26,6 +26,7 @@ const signInSchema = z.object({
 });
 
 export const signIn = async (
+  redirectTo: string,
   _actionState: ActionState,
   formData: FormData
 ): Promise<ActionState> => {
@@ -79,5 +80,7 @@ export const signIn = async (
     return formErrorToActionState(error, formData);
   }
 
-  return redirect({ href: "/profile", locale: "zh" });
+  // 登录成功后跳转到指定页面，默认为 /profile
+  const safeRedirect = redirectTo.startsWith('/') ? redirectTo : '/profile';
+  return redirect({ href: safeRedirect, locale: "zh" });
 };

@@ -1,18 +1,13 @@
 'use client';
 
-import { useState, useTransition, useRef } from 'react';
+import { useState, useTransition, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Camera, X, Loader2 } from 'lucide-react';
+import { useLocale } from 'next-intl';
+import { Camera, X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { uploadPhoto } from '@/features/photo/actions';
-import { compressImage, generateThumbnail } from '@/features/photo/utils/image-compress';
-import type { GatheringOption } from '@/features/photo/types';
 
-// 情绪标签类型（与 Prisma 枚举对应）
+// 情绪标签类型
 type EmotionTag = 'HAPPY' | 'EXCITED' | 'WARM' | 'NOSTALGIC' | 'FUNNY';
-
-interface UploadFormProps {
-    gatherings: GatheringOption[];
-}
 
 // 情绪标签选项
 const emotionTags: { value: EmotionTag; label: string; emoji: string }[] = [
@@ -23,29 +18,149 @@ const emotionTags: { value: EmotionTag; label: string; emoji: string }[] = [
     { value: 'FUNNY', label: '搞笑', emoji: '😂' },
 ];
 
-// 压缩后的图片数据
-interface CompressedImage {
+// 上传状态
+type UploadStatus = 'pending' | 'uploading' | 'success' | 'error';
+
+// 图片数据
+interface ImageItem {
+    id: string;
     file: File;
     preview: string;
     width: number;
     height: number;
-    thumbnailDataUrl: string;
-    compressedDataUrl: string;
+    status: UploadStatus;
+    progress: number; // 上传进度 0-100
+    url?: string; // COS URL
+    error?: string;
 }
 
-export function UploadForm({ gatherings }: UploadFormProps) {
+// 读取图片尺寸
+function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            resolve({ width: img.naturalWidth, height: img.naturalHeight });
+            URL.revokeObjectURL(img.src);
+        };
+        img.onerror = () => resolve({ width: 0, height: 0 });
+        img.src = URL.createObjectURL(file);
+    });
+}
+
+// 将 File 转为 base64
+function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// 生成唯一 ID
+function generateId(): string {
+    return Math.random().toString(36).substring(2, 10);
+}
+
+export function UploadForm() {
     const router = useRouter();
+    const locale = useLocale();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isPending, startTransition] = useTransition();
 
     // 表单状态
-    const [images, setImages] = useState<CompressedImage[]>([]);
-    const [isCompressing, setIsCompressing] = useState(false);
+    const [images, setImages] = useState<ImageItem[]>([]);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [gatheringId, setGatheringId] = useState('');
     const [emotionTag, setEmotionTag] = useState<EmotionTag | ''>('');
     const [error, setError] = useState('');
+
+    // 组件卸载时清理所有 preview URL，防止内存泄漏
+    useEffect(() => {
+        return () => {
+            images.forEach((img) => {
+                if (img.preview) {
+                    URL.revokeObjectURL(img.preview);
+                }
+            });
+        };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // 上传单张图片到 COS（通过 API Route）
+    const uploadSingleImage = async (item: ImageItem) => {
+        // 模拟进度的定时器
+        let progressInterval: NodeJS.Timeout | null = null;
+
+        try {
+            // 更新状态为上传中，进度从 0 开始
+            setImages((prev) =>
+                prev.map((img) => (img.id === item.id ? { ...img, status: 'uploading' as UploadStatus, progress: 0 } : img))
+            );
+
+            // 根据文件大小计算基础速度（大文件慢，小文件快）
+            const fileSizeMB = item.file.size / (1024 * 1024);
+            const baseInterval = Math.min(200, Math.max(80, fileSizeMB * 20)); // 80-200ms
+
+            // 启动模拟进度（带随机性）
+            progressInterval = setInterval(() => {
+                setImages((prev) =>
+                    prev.map((img) => {
+                        if (img.id === item.id && img.status === 'uploading' && img.progress < 85) {
+                            // 进度越高增长越慢 + 随机波动
+                            const remaining = 85 - img.progress;
+                            const baseIncrement = Math.max(1, Math.floor(remaining / 8));
+                            const randomFactor = 0.5 + Math.random(); // 0.5 ~ 1.5
+                            const increment = Math.max(1, Math.floor(baseIncrement * randomFactor));
+                            return { ...img, progress: Math.min(85, img.progress + increment) };
+                        }
+                        return img;
+                    })
+                );
+            }, baseInterval);
+
+            // 转为 base64 并调用 API
+            const base64Data = await fileToBase64(item.file);
+            const response = await fetch('/api/photos/upload-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ base64Data }),
+            });
+
+            const result = await response.json();
+
+            // 清除进度定时器
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+
+            if (result.success && result.url) {
+                setImages((prev) =>
+                    prev.map((img) =>
+                        img.id === item.id ? { ...img, status: 'success' as UploadStatus, progress: 100, url: result.url } : img
+                    )
+                );
+            } else {
+                setImages((prev) =>
+                    prev.map((img) =>
+                        img.id === item.id
+                            ? { ...img, status: 'error' as UploadStatus, progress: 0, error: result.error || '上传失败' }
+                            : img
+                    )
+                );
+            }
+        } catch {
+            // 清除进度定时器
+            if (progressInterval) {
+                clearInterval(progressInterval);
+            }
+            setImages((prev) =>
+                prev.map((img) =>
+                    img.id === item.id ? { ...img, status: 'error' as UploadStatus, progress: 0, error: '上传失败' } : img
+                )
+            );
+        }
+    };
 
     // 处理文件选择
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,53 +171,65 @@ export function UploadForm({ gatherings }: UploadFormProps) {
         const newFiles = files.slice(0, 9 - images.length);
         if (newFiles.length === 0) return;
 
-        setIsCompressing(true);
         setError('');
 
-        try {
-            // 并行压缩所有图片
-            const compressedImages = await Promise.all(
-                newFiles.map(async (file) => {
-                    const [compressed, thumbnail] = await Promise.all([
-                        compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 }),
-                        generateThumbnail(file, 400),
-                    ]);
+        // 创建图片项并立即开始上传
+        for (const file of newFiles) {
+            const dimensions = await getImageDimensions(file);
+            const item: ImageItem = {
+                id: generateId(),
+                file,
+                preview: URL.createObjectURL(file),
+                width: dimensions.width,
+                height: dimensions.height,
+                status: 'pending',
+                progress: 0,
+            };
 
-                    return {
-                        file,
-                        preview: thumbnail.dataUrl,
-                        width: compressed.width,
-                        height: compressed.height,
-                        thumbnailDataUrl: thumbnail.dataUrl,
-                        compressedDataUrl: compressed.dataUrl,
-                    };
-                })
-            );
+            setImages((prev) => [...prev, item]);
 
-            setImages((prev) => [...prev, ...compressedImages]);
-        } catch {
-            setError('图片处理失败，请重试');
-        } finally {
-            setIsCompressing(false);
-            // 清空 input，允许重复选择同一文件
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
+            // 立即开始上传
+            uploadSingleImage(item);
+        }
+
+        // 清空 input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
         }
     };
 
-    // 移除已选图片
-    const handleRemoveFile = (index: number) => {
-        setImages((prev) => prev.filter((_, i) => i !== index));
+    // 移除图片
+    const handleRemoveFile = (id: string) => {
+        setImages((prev) => {
+            const item = prev.find((img) => img.id === id);
+            if (item?.preview) {
+                URL.revokeObjectURL(item.preview);
+            }
+            return prev.filter((img) => img.id !== id);
+        });
     };
 
-    // 提交上传
+    // 重试上传
+    const handleRetry = (item: ImageItem) => {
+        uploadSingleImage(item);
+    };
+
+    // 检查是否所有图片都上传成功
+    const allUploaded = images.length > 0 && images.every((img) => img.status === 'success');
+    const hasUploading = images.some((img) => img.status === 'uploading');
+
+    // 提交表单
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
         if (images.length === 0) {
             setError('请选择至少一张照片');
+            return;
+        }
+
+        if (!allUploaded) {
+            setError('请等待所有图片上传完成');
             return;
         }
 
@@ -113,27 +240,26 @@ export function UploadForm({ gatherings }: UploadFormProps) {
 
         startTransition(async () => {
             try {
-                // 使用第一张图片（后续可扩展为多图上传）
                 const firstImage = images[0];
 
                 const result = await uploadPhoto({
                     title: title.trim(),
                     description: description.trim() || undefined,
-                    url: firstImage.compressedDataUrl,
-                    thumbnailUrl: firstImage.thumbnailDataUrl,
+                    url: firstImage.url!,
                     width: firstImage.width,
                     height: firstImage.height,
                     emotionTag: emotionTag || undefined,
-                    gatheringId: gatheringId || undefined,
                 });
 
                 if (result.success && result.photoId) {
-                    router.push(`/photo/${result.photoId}`);
+                    // 跳转到照片墙页面
+                    router.push(`/${locale}/photo`);
+                    router.refresh();
                 } else {
-                    setError('上传失败，请重试');
+                    setError('保存失败，请重试');
                 }
             } catch {
-                setError('上传失败，请重试');
+                setError('保存失败，请重试');
             }
         });
     };
@@ -144,21 +270,55 @@ export function UploadForm({ gatherings }: UploadFormProps) {
             <div className="space-y-2">
                 <label className="block text-sm font-medium">选择照片</label>
                 <div className="grid grid-cols-3 gap-2">
-                    {/* 已选图片预览 */}
-                    {images.map((image, index) => (
-                        <div key={index} className="relative aspect-square">
+                    {images.map((image) => (
+                        <div key={image.id} className="relative aspect-square">
                             <img
                                 src={image.preview}
-                                alt={`预览 ${index + 1}`}
+                                alt="预览"
                                 className="w-full h-full object-cover rounded-lg"
                             />
+                            {/* 上传状态遮罩 */}
+                            {image.status === 'uploading' && (
+                                <div className="absolute inset-0 bg-black/50 rounded-lg flex flex-col items-center justify-center gap-2">
+                                    {/* 进度条 */}
+                                    <div className="w-3/4 h-1.5 bg-white/30 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-white rounded-full transition-all duration-100"
+                                            style={{ width: `${image.progress}%` }}
+                                        />
+                                    </div>
+                                    <span className="text-white text-xs">{image.progress}%</span>
+                                </div>
+                            )}
+                            {image.status === 'error' && (
+                                <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+                                    <AlertCircle className="w-5 h-5 text-red-500" />
+                                </div>
+                            )}
+                            {/* 成功标记 */}
+                            {image.status === 'success' && (
+                                <div className="absolute bottom-1 right-1">
+                                    <CheckCircle className="w-5 h-5 text-green-500 drop-shadow-md" />
+                                </div>
+                            )}
+                            {/* 删除按钮 */}
                             <button
                                 type="button"
-                                onClick={() => handleRemoveFile(index)}
+                                onClick={() => handleRemoveFile(image.id)}
                                 className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-white rounded-full flex items-center justify-center"
                             >
                                 <X className="w-4 h-4" />
                             </button>
+                            {/* 重试按钮 */}
+                            {image.status === 'error' && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleRetry(image)}
+                                    className="absolute bottom-1 left-1 right-1 bg-primary text-primary-foreground text-xs py-1 rounded"
+                                >
+                                    重试
+                                </button>
+                            )}
                         </div>
                     ))}
 
@@ -167,17 +327,10 @@ export function UploadForm({ gatherings }: UploadFormProps) {
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            disabled={isCompressing}
-                            className="aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+                            className="aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors"
                         >
-                            {isCompressing ? (
-                                <Loader2 className="w-8 h-8 animate-spin" />
-                            ) : (
-                                <>
-                                    <Camera className="w-8 h-8" />
-                                    <span className="text-xs mt-1">添加</span>
-                                </>
-                            )}
+                            <Camera className="w-8 h-8" />
+                            <span className="text-xs mt-1">添加</span>
                         </button>
                     )}
                 </div>
@@ -189,7 +342,7 @@ export function UploadForm({ gatherings }: UploadFormProps) {
                     onChange={handleFileSelect}
                     className="hidden"
                 />
-                <p className="text-xs text-muted-foreground">最多可选择 9 张照片，图片会自动压缩</p>
+                <p className="text-xs text-muted-foreground">最多 9 张，选择后自动上传原图</p>
             </div>
 
             {/* 标题 */}
@@ -220,23 +373,6 @@ export function UploadForm({ gatherings }: UploadFormProps) {
                 />
             </div>
 
-            {/* 所属聚会 */}
-            <div className="space-y-2">
-                <label className="block text-sm font-medium">所属聚会</label>
-                <select
-                    value={gatheringId}
-                    onChange={(e) => setGatheringId(e.target.value)}
-                    className="w-full px-4 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20"
-                >
-                    <option value="">不关联聚会</option>
-                    {gatherings.map((g) => (
-                        <option key={g.id} value={g.id}>
-                            {g.title} ({new Date(g.date).toLocaleDateString('zh-CN')})
-                        </option>
-                    ))}
-                </select>
-            </div>
-
             {/* 情绪标签 */}
             <div className="space-y-2">
                 <label className="block text-sm font-medium">情绪标签（可选）</label>
@@ -259,24 +395,27 @@ export function UploadForm({ gatherings }: UploadFormProps) {
 
             {/* 错误提示 */}
             {error && (
-                <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-lg">
-                    {error}
-                </div>
+                <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-lg">{error}</div>
             )}
 
             {/* 提交按钮 */}
             <button
                 type="submit"
-                disabled={isPending || images.length === 0 || isCompressing}
+                disabled={isPending || !allUploaded || hasUploading || images.length === 0}
                 className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {isPending ? (
                     <>
                         <Loader2 className="w-4 h-4 animate-spin" />
+                        保存中...
+                    </>
+                ) : hasUploading ? (
+                    <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
                         上传中...
                     </>
                 ) : (
-                    '上传照片'
+                    '发布照片'
                 )}
             </button>
         </form>

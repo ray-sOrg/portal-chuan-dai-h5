@@ -9,9 +9,16 @@ import { signUpPath } from "@/paths";
 
 import { signIn } from "../actions/sign-in";
 
-export function SignInForm() {
+interface SignInFormProps {
+    redirectTo?: string;
+}
+
+export function SignInForm({ redirectTo = '/profile' }: SignInFormProps) {
     const t = useTranslations("auth");
-    const [actionState, action] = useActionState(signIn, EMPTY_ACTION_STATE);
+
+    // 绑定 redirectTo 参数到 signIn action
+    const signInWithRedirect = signIn.bind(null, redirectTo);
+    const [actionState, action] = useActionState(signInWithRedirect, EMPTY_ACTION_STATE);
 
     return (
         <Form

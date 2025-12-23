@@ -27,24 +27,31 @@ export function PhotoGrid({ initialPhotos, hasMore = false, onLoadMore }: PhotoG
     const [isPending, startTransition] = useTransition();
     const router = useRouter();
 
-    // 处理收藏点击
+    // 处理收藏点击（乐观更新）
     const handleFavoriteClick = useCallback(
         async (photoId: string) => {
+            // 乐观更新：先更新 UI
+            const originalPhotos = photos;
+            setPhotos((prev) =>
+                prev.map((p) =>
+                    p.id === photoId ? { ...p, isFavorited: !p.isFavorited } : p
+                )
+            );
+
             startTransition(async () => {
                 const result = await togglePhotoFavorite(photoId);
 
-                if (result.success) {
-                    setPhotos((prev) =>
-                        prev.map((p) =>
-                            p.id === photoId ? { ...p, isFavorited: result.isFavorited } : p
-                        )
-                    );
-                } else if (result.error === 'UNAUTHORIZED') {
-                    router.push('/sign-in');
+                if (!result.success) {
+                    // 失败时回滚
+                    setPhotos(originalPhotos);
+
+                    if (result.error === 'UNAUTHORIZED') {
+                        router.push('/sign-in');
+                    }
                 }
             });
         },
-        [router]
+        [photos, router]
     );
 
     // 加载更多

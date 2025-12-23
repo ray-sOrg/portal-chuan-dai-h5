@@ -226,3 +226,22 @@ body {
 .masonry-grid-column > * {
   margin-bottom: 12px;
 }
+
+/* 新上传照片高亮动画 */
+@keyframes highlight {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-highlight {
+  animation: highlight 0.5s ease-out;
+}

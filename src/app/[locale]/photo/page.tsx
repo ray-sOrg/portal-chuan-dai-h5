@@ -6,6 +6,9 @@ import { ThemeToggle } from '@/components/theme';
 import { LanguageToggle } from '@/components/language-toggle';
 import { UploadButton } from './upload-button';
 
+// 页面缓存 30 秒
+export const revalidate = 30;
+
 export default async function PhotoPage() {
   const t = await getTranslations();
 
