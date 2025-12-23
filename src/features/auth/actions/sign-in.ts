@@ -2,6 +2,7 @@
 
 import { verify } from "@node-rs/argon2";
 import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import {
@@ -9,7 +10,6 @@ import {
   formErrorToActionState,
   toActionState,
 } from "@/components/form/utils/to-action-state";
-import { redirect } from "@/i18n/routing";
 import { lucia } from "@/lib/lucia";
 import { prisma } from "@/lib/prisma";
 
@@ -82,5 +82,5 @@ export const signIn = async (
 
   // 登录成功后跳转到指定页面，默认为 /profile
   const safeRedirect = redirectTo.startsWith('/') ? redirectTo : '/profile';
-  return redirect({ href: safeRedirect, locale: "zh" });
+  redirect(safeRedirect);
 };
