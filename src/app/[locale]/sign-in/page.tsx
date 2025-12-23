@@ -1,10 +1,10 @@
 import { useTranslations } from "next-intl";
+import { redirect } from "next/navigation";
 
 import { SignInForm } from "@/features/auth/components";
 import { ThemeToggle } from "@/components/theme";
 import { LanguageToggle } from "@/components/language-toggle";
 import { getAuth } from "@/features/auth/queries/get-auth";
-import { redirect } from "@/i18n/routing";
 
 interface SignInPageProps {
     searchParams: Promise<{ redirect?: string }>;
