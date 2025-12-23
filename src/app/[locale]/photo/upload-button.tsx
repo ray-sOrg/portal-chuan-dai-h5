@@ -3,6 +3,7 @@
 import { Camera } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 
 interface UploadButtonProps {
     isLoggedIn: boolean;
@@ -11,13 +12,13 @@ interface UploadButtonProps {
 export function UploadButton({ isLoggedIn }: UploadButtonProps) {
     const t = useTranslations();
     const router = useRouter();
+    const locale = useLocale();
 
     const handleClick = () => {
-        // 使用相对路径，保持当前 locale
         if (isLoggedIn) {
-            router.push('./upload');
+            router.push(`/${locale}/photo/upload`);
         } else {
-            router.push('../sign-in');
+            router.push(`/${locale}/sign-in`);
         }
     };
 

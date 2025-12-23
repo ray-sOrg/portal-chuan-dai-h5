@@ -209,3 +209,20 @@ body {
   /* 点击高亮取消（移动端） */
   -webkit-tap-highlight-color: transparent;
 }
+
+
+/* 瀑布流布局样式 (react-masonry-css) */
+.masonry-grid {
+  display: flex;
+  margin-left: -12px; /* gutter size offset */
+  width: auto;
+}
+
+.masonry-grid-column {
+  padding-left: 12px; /* gutter size */
+  background-clip: padding-box;
+}
+
+.masonry-grid-column > * {
+  margin-bottom: 12px;
+}

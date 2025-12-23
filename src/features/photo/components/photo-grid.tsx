@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import Masonry from 'react-masonry-css';
 import { PhotoCard } from './photo-card';
 import { togglePhotoFavorite } from '@/features/photo/actions/toggle-favorite';
 import type { PhotoListItem } from '../types';
@@ -11,6 +12,13 @@ interface PhotoGridProps {
     hasMore?: boolean;
     onLoadMore?: () => Promise<PhotoListItem[]>;
 }
+
+// 响应式断点配置
+const breakpointColumns = {
+    default: 2,  // 默认 2 列
+    640: 2,      // sm 及以上 2 列
+    480: 2,      // 小屏幕 2 列
+};
 
 export function PhotoGrid({ initialPhotos, hasMore = false, onLoadMore }: PhotoGridProps) {
     const [photos, setPhotos] = useState(initialPhotos);
@@ -26,14 +34,12 @@ export function PhotoGrid({ initialPhotos, hasMore = false, onLoadMore }: PhotoG
                 const result = await togglePhotoFavorite(photoId);
 
                 if (result.success) {
-                    // 更新本地状态
                     setPhotos((prev) =>
                         prev.map((p) =>
                             p.id === photoId ? { ...p, isFavorited: result.isFavorited } : p
                         )
                     );
                 } else if (result.error === 'UNAUTHORIZED') {
-                    // 未登录，跳转登录页
                     router.push('/sign-in');
                 }
             });
@@ -57,46 +63,23 @@ export function PhotoGrid({ initialPhotos, hasMore = false, onLoadMore }: PhotoG
         }
     }, [onLoadMore, loading]);
 
-    // 将照片分成两列（瀑布流效果）
-    const leftColumn: PhotoListItem[] = [];
-    const rightColumn: PhotoListItem[] = [];
-
-    photos.forEach((photo, index) => {
-        if (index % 2 === 0) {
-            leftColumn.push(photo);
-        } else {
-            rightColumn.push(photo);
-        }
-    });
-
     return (
         <div className="space-y-4">
             {/* 瀑布流网格 */}
-            <div className="grid grid-cols-2 gap-3">
-                {/* 左列 */}
-                <div className="space-y-3">
-                    {leftColumn.map((photo) => (
-                        <PhotoCard
-                            key={photo.id}
-                            photo={photo}
-                            onFavoriteClick={handleFavoriteClick}
-                            isLoading={isPending}
-                        />
-                    ))}
-                </div>
-
-                {/* 右列 */}
-                <div className="space-y-3">
-                    {rightColumn.map((photo) => (
-                        <PhotoCard
-                            key={photo.id}
-                            photo={photo}
-                            onFavoriteClick={handleFavoriteClick}
-                            isLoading={isPending}
-                        />
-                    ))}
-                </div>
-            </div>
+            <Masonry
+                breakpointCols={breakpointColumns}
+                className="masonry-grid"
+                columnClassName="masonry-grid-column"
+            >
+                {photos.map((photo) => (
+                    <PhotoCard
+                        key={photo.id}
+                        photo={photo}
+                        onFavoriteClick={handleFavoriteClick}
+                        isLoading={isPending}
+                    />
+                ))}
+            </Masonry>
 
             {/* 加载更多按钮 */}
             {canLoadMore && (

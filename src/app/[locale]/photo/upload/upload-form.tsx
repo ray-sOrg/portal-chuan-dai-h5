@@ -4,6 +4,7 @@ import { useState, useTransition, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Camera, X, Loader2 } from 'lucide-react';
 import { uploadPhoto } from '@/features/photo/actions';
+import { compressImage, generateThumbnail } from '@/features/photo/utils/image-compress';
 import type { GatheringOption } from '@/features/photo/types';
 
 // 情绪标签类型（与 Prisma 枚举对应）
@@ -22,14 +23,24 @@ const emotionTags: { value: EmotionTag; label: string; emoji: string }[] = [
     { value: 'FUNNY', label: '搞笑', emoji: '😂' },
 ];
 
+// 压缩后的图片数据
+interface CompressedImage {
+    file: File;
+    preview: string;
+    width: number;
+    height: number;
+    thumbnailDataUrl: string;
+    compressedDataUrl: string;
+}
+
 export function UploadForm({ gatherings }: UploadFormProps) {
     const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isPending, startTransition] = useTransition();
 
     // 表单状态
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-    const [previews, setPreviews] = useState<string[]>([]);
+    const [images, setImages] = useState<CompressedImage[]>([]);
+    const [isCompressing, setIsCompressing] = useState(false);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [gatheringId, setGatheringId] = useState('');
@@ -37,28 +48,52 @@ export function UploadForm({ gatherings }: UploadFormProps) {
     const [error, setError] = useState('');
 
     // 处理文件选择
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (files.length === 0) return;
 
         // 限制最多 9 张
-        const newFiles = files.slice(0, 9 - selectedFiles.length);
-        setSelectedFiles((prev) => [...prev, ...newFiles]);
+        const newFiles = files.slice(0, 9 - images.length);
+        if (newFiles.length === 0) return;
 
-        // 生成预览
-        newFiles.forEach((file) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setPreviews((prev) => [...prev, e.target?.result as string]);
-            };
-            reader.readAsDataURL(file);
-        });
+        setIsCompressing(true);
+        setError('');
+
+        try {
+            // 并行压缩所有图片
+            const compressedImages = await Promise.all(
+                newFiles.map(async (file) => {
+                    const [compressed, thumbnail] = await Promise.all([
+                        compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 }),
+                        generateThumbnail(file, 400),
+                    ]);
+
+                    return {
+                        file,
+                        preview: thumbnail.dataUrl,
+                        width: compressed.width,
+                        height: compressed.height,
+                        thumbnailDataUrl: thumbnail.dataUrl,
+                        compressedDataUrl: compressed.dataUrl,
+                    };
+                })
+            );
+
+            setImages((prev) => [...prev, ...compressedImages]);
+        } catch {
+            setError('图片处理失败，请重试');
+        } finally {
+            setIsCompressing(false);
+            // 清空 input，允许重复选择同一文件
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
     };
 
     // 移除已选图片
     const handleRemoveFile = (index: number) => {
-        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
-        setPreviews((prev) => prev.filter((_, i) => i !== index));
+        setImages((prev) => prev.filter((_, i) => i !== index));
     };
 
     // 提交上传
@@ -66,7 +101,7 @@ export function UploadForm({ gatherings }: UploadFormProps) {
         e.preventDefault();
         setError('');
 
-        if (selectedFiles.length === 0) {
+        if (images.length === 0) {
             setError('请选择至少一张照片');
             return;
         }
@@ -78,14 +113,16 @@ export function UploadForm({ gatherings }: UploadFormProps) {
 
         startTransition(async () => {
             try {
-                // 这里简化处理，实际应该上传到云存储
-                // 目前使用 base64 作为 URL（仅用于演示）
-                const preview = previews[0];
+                // 使用第一张图片（后续可扩展为多图上传）
+                const firstImage = images[0];
 
                 const result = await uploadPhoto({
                     title: title.trim(),
                     description: description.trim() || undefined,
-                    url: preview, // 实际应该是云存储 URL
+                    url: firstImage.compressedDataUrl,
+                    thumbnailUrl: firstImage.thumbnailDataUrl,
+                    width: firstImage.width,
+                    height: firstImage.height,
                     emotionTag: emotionTag || undefined,
                     gatheringId: gatheringId || undefined,
                 });
@@ -108,10 +145,10 @@ export function UploadForm({ gatherings }: UploadFormProps) {
                 <label className="block text-sm font-medium">选择照片</label>
                 <div className="grid grid-cols-3 gap-2">
                     {/* 已选图片预览 */}
-                    {previews.map((preview, index) => (
+                    {images.map((image, index) => (
                         <div key={index} className="relative aspect-square">
                             <img
-                                src={preview}
+                                src={image.preview}
                                 alt={`预览 ${index + 1}`}
                                 className="w-full h-full object-cover rounded-lg"
                             />
@@ -126,14 +163,21 @@ export function UploadForm({ gatherings }: UploadFormProps) {
                     ))}
 
                     {/* 添加按钮 */}
-                    {selectedFiles.length < 9 && (
+                    {images.length < 9 && (
                         <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                            disabled={isCompressing}
+                            className="aspect-square border-2 border-dashed border-border rounded-lg flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
                         >
-                            <Camera className="w-8 h-8" />
-                            <span className="text-xs mt-1">添加</span>
+                            {isCompressing ? (
+                                <Loader2 className="w-8 h-8 animate-spin" />
+                            ) : (
+                                <>
+                                    <Camera className="w-8 h-8" />
+                                    <span className="text-xs mt-1">添加</span>
+                                </>
+                            )}
                         </button>
                     )}
                 </div>
@@ -145,7 +189,7 @@ export function UploadForm({ gatherings }: UploadFormProps) {
                     onChange={handleFileSelect}
                     className="hidden"
                 />
-                <p className="text-xs text-muted-foreground">最多可选择 9 张照片</p>
+                <p className="text-xs text-muted-foreground">最多可选择 9 张照片，图片会自动压缩</p>
             </div>
 
             {/* 标题 */}
@@ -223,7 +267,7 @@ export function UploadForm({ gatherings }: UploadFormProps) {
             {/* 提交按钮 */}
             <button
                 type="submit"
-                disabled={isPending || selectedFiles.length === 0}
+                disabled={isPending || images.length === 0 || isCompressing}
                 className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {isPending ? (
