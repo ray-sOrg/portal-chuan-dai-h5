@@ -17,7 +17,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
 
     // 已登录用户重定向
     if (user) {
-        redirect({ href: redirectTo, locale: "zh" });
+        redirect(redirectTo);
     }
 
     return <SignInPageContent redirectTo={redirectTo} />;
