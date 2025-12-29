@@ -1,5 +1,8 @@
-import { Suspense } from "react";
+'use client';
+
+import { Suspense, useMemo, useRef, useState } from "react";
 import { useTranslations } from 'next-intl';
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Spinner } from "@/components/spinner";
 import { ThemeToggle } from "@/components/theme";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -39,90 +42,140 @@ const categories = [
 
 export default function MenuPage() {
   const t = useTranslations();
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const scrollParentRef = useRef<HTMLDivElement | null>(null);
+
+  const virtualDishes = useMemo(
+    () =>
+      Array.from({ length: 30 }, (_, index) =>
+        mockDishes.map((dish) => ({
+          ...dish,
+          id: `${dish.id}-${index}`,
+        })),
+      ).flat(),
+    [],
+  );
+
+  const rowVirtualizer = useVirtualizer({
+    count: virtualDishes.length,
+    getScrollElement: () => scrollParentRef.current,
+    estimateSize: () => 260,
+    overscan: 5,
+  });
 
   return (
     <div className="flex flex-1 flex-col min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-50">
-        <div className="container mx-auto flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">{t('common.menu')}</h1>
-          <div className="flex items-center gap-2">
-            <LanguageToggle />
-            <ThemeToggle />
+      {/* 顶部 Header + 分类 Chips 固定区域 */}
+      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
+        <header className="p-4">
+          <div className="container mx-auto flex items-center justify-between gap-4">
+            <h1 className="text-2xl font-bold">{t('common.menu')}</h1>
+            <div className="flex items-center gap-2">
+              <LanguageToggle />
+              <ThemeToggle />
+            </div>
+          </div>
+        </header>
+
+        {/* 分类 Chips 行：紧贴 Header 下方，横向滚动 */}
+        <div className="px-4 pb-2 border-t border-border">
+          <div className="container mx-auto">
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {categories.map((category) => {
+                const isActive = category.id === activeCategory;
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => setActiveCategory(category.id)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary'
+                    }`}
+                  >
+                    {t(category.labelKey)}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 p-4 pb-20">
-        <div className="container mx-auto space-y-6">
-          {/* Category Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${category.id === 'mainCourses'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary'
-                  }`}
+      {/* 长列表区域：使用虚拟滚动，占满 Header 与 Footer 之间剩余空间 */}
+      <main className="flex-1 overflow-hidden">
+        <div className="h-full px-4 pb-20">
+          <div
+            ref={scrollParentRef}
+            className="h-full container mx-auto overflow-y-auto"
+          >
+            <Suspense fallback={<Spinner />}>
+              <div
+                style={{
+                  height: rowVirtualizer.getTotalSize(),
+                  position: 'relative',
+                }}
               >
-                {t(category.labelKey)}
-              </button>
-            ))}
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const dish = virtualDishes[virtualRow.index];
+
+                  return (
+                    <div
+                      key={dish.id}
+                      className="absolute top-0 left-0 w-full pb-4"
+                      style={{
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      <div className="card-base overflow-hidden">
+                        <div className="aspect-video bg-muted relative">
+                          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                            📸 {dish.name}
+                          </div>
+                          {/* 收藏按钮 */}
+                          <button className="absolute top-3 right-3 w-8 h-8 bg-background/80 rounded-full flex items-center justify-center">
+                            ♡
+                          </button>
+                        </div>
+
+                        <div className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-semibold text-lg">{dish.name}</h3>
+                          </div>
+
+                          {/* Tags */}
+                          <div className="flex gap-2 mb-3">
+                            {dish.tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className={`px-2 py-1 text-xs rounded-full ${
+                                  tag === 'spicy'
+                                    ? 'bg-destructive/10 text-destructive'
+                                    : tag === 'chicken'
+                                    ? 'bg-secondary/10 text-secondary'
+                                    : 'bg-success/10 text-success'
+                                }`}
+                              >
+                                {t(`menu.tags.${tag}`)}
+                              </span>
+                            ))}
+                          </div>
+
+                          <p className="text-muted-foreground text-sm mb-4">
+                            {dish.description}
+                          </p>
+
+                          <button className="w-full bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                            + {t('menu.add')}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Suspense>
           </div>
-
-          {/* Dishes Grid */}
-          <Suspense fallback={<Spinner />}>
-            <div className="grid gap-4">
-              {mockDishes.map((dish) => (
-                <div
-                  key={dish.id}
-                  className="card-base overflow-hidden"
-                >
-                  <div className="aspect-video bg-muted relative">
-                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                      📸 {dish.name}
-                    </div>
-                    {/* 收藏按钮 */}
-                    <button className="absolute top-3 right-3 w-8 h-8 bg-background/80 rounded-full flex items-center justify-center">
-                      ♡
-                    </button>
-                  </div>
-
-                  <div className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-semibold text-lg">{dish.name}</h3>
-                    </div>
-
-                    {/* Tags */}
-                    <div className="flex gap-2 mb-3">
-                      {dish.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className={`px-2 py-1 text-xs rounded-full ${tag === 'spicy'
-                              ? 'bg-destructive/10 text-destructive'
-                              : tag === 'chicken'
-                                ? 'bg-secondary/10 text-secondary'
-                                : 'bg-success/10 text-success'
-                            }`}
-                        >
-                          {t(`menu.tags.${tag}`)}
-                        </span>
-                      ))}
-                    </div>
-
-                    <p className="text-muted-foreground text-sm mb-4">
-                      {dish.description}
-                    </p>
-
-                    <button className="w-full bg-primary text-primary-foreground py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                      + {t('menu.add')}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Suspense>
         </div>
       </main>
     </div>
