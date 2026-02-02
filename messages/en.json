@@ -115,14 +115,20 @@
       "all": "All",
       "appetizers": "Appetizers",
       "mainCourses": "Main Courses",
-      "soups": "Soups"
+      "soups": "Soups",
+      "desserts": "Desserts",
+      "beverages": "Beverages"
     },
     "tags": {
       "spicy": "Spicy",
-      "chicken": "Chicken",
-      "vegetarian": "Vegetarian Option"
+      "vegetarian": "Vegetarian"
     },
-    "add": "Add"
+    "addToMenu": "Add to Menu",
+    "addedToMenu": "Added to menu",
+    "favorited": "Added to favorites",
+    "unfavorite": "Removed from favorites",
+    "empty": "No dishes available",
+    "order": "Order"
   },
   "photoWall": {
     "title": "Photo Wall",
@@ -141,5 +147,59 @@
   "placeholder": {
     "error": "Oops, something went wrong!",
     "comingSoon": "Coming Soon"
+  },
+  "errors": {
+    "unknown": "Something went wrong, please try again"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty",
+    "total": "Total",
+    "clear": "Clear",
+    "submit": "Submit Order",
+    "submitting": "Submitting...",
+    "added": "Added to cart",
+    "item": "items"
+  },
+  "order": {
+    "title": "My Orders",
+    "empty": "No orders yet",
+    "orderNumber": "Order #",
+    "status": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "amount": "Amount",
+    "items": "Dishes",
+    "remark": "Note",
+    "createdAt": "Order Time",
+    "actions": {
+      "confirm": "Confirm",
+      "complete": "Complete",
+      "cancel": "Cancel"
+    },
+    "guest": "Guest",
+    "noOrders": "No orders yet",
+    "pendingOrders": "Pending Orders",
+    "allOrders": "All Orders"
+  },
+  "gathering": {
+    "title": "Create Gathering",
+    "name": "Gathering Name",
+    "namePlaceholder": "Enter gathering name",
+    "date": "Gathering Date",
+    "location": "Location",
+    "locationPlaceholder": "Enter location",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter description",
+    "create": "Create Gathering",
+    "createSuccess": "Gathering created successfully",
+    "inviteCode": "Invite Code",
+    "inviteLink": "Invite Link",
+    "copyLink": "Copy Link",
+    "share": "Share with friends",
+    "submitting": "Creating..."
   }
 }
