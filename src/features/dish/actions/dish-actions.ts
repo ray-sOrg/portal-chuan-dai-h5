@@ -3,26 +3,60 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { getAuth } from '@/features/auth/queries/get-auth';
+import type { Dish } from '../types';
 
 /**
  * 获取菜品列表
  */
-export async function getDishes() {
+export async function getDishes(): Promise<Dish[]> {
   const dishes = await prisma.dish.findMany({
     where: { isAvailable: true },
     orderBy: { createdAt: 'desc' },
   });
-  return dishes;
+
+  // 转换 Decimal 到 number
+  return dishes.map((dish) => ({
+    id: dish.id,
+    name: dish.name,
+    nameEn: dish.nameEn,
+    description: dish.description,
+    descEn: dish.descEn,
+    price: typeof dish.price === 'number' ? dish.price : dish.price.toNumber(),
+    image: dish.image,
+    category: dish.category,
+    isSpicy: dish.isSpicy,
+    isVegetarian: dish.isVegetarian,
+    isAvailable: dish.isAvailable,
+    createdAt: dish.createdAt,
+    updatedAt: dish.updatedAt,
+  }));
 }
 
 /**
  * 获取单个菜品详情
  */
-export async function getDishById(id: string) {
+export async function getDishById(id: string): Promise<Dish | null> {
   const dish = await prisma.dish.findUnique({
     where: { id },
   });
-  return dish;
+
+  if (!dish) return null;
+
+  return {
+    id: dish.id,
+    name: dish.name,
+    nameEn: dish.nameEn,
+    description: dish.description,
+    descEn: dish.descEn,
+    price: typeof dish.price === 'number' ? dish.price : dish.price.toNumber(),
+    image: dish.image,
+    category: dish.category,
+    isSpicy: dish.isSpicy,
+    isVegetarian: dish.isVegetarian,
+    isAvailable: dish.isAvailable,
+    createdAt: dish.createdAt,
+    updatedAt: dish.updatedAt,
+  };
 }
 
 /**
@@ -89,7 +123,7 @@ export async function addToMenu(dishId: string, quantity: number = 1) {
 /**
  * 获取用户收藏的菜品
  */
-export async function getFavoriteDishes() {
+export async function getFavoriteDishes(): Promise<Dish[]> {
   const { user } = await getAuth();
 
   if (!user) return [];
@@ -99,5 +133,19 @@ export async function getFavoriteDishes() {
     include: { dish: true },
   });
 
-  return favorites.map((f) => f.dish);
+  return favorites.map((f) => ({
+    id: f.dish.id,
+    name: f.dish.name,
+    nameEn: f.dish.nameEn,
+    description: f.dish.description,
+    descEn: f.dish.descEn,
+    price: typeof f.dish.price === 'number' ? f.dish.price : f.dish.price.toNumber(),
+    image: f.dish.image,
+    category: f.dish.category,
+    isSpicy: f.dish.isSpicy,
+    isVegetarian: f.dish.isVegetarian,
+    isAvailable: f.dish.isAvailable,
+    createdAt: f.dish.createdAt,
+    updatedAt: f.dish.updatedAt,
+  }));
 }
