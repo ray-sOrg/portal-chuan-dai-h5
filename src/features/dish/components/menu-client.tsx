@@ -10,8 +10,8 @@ import { LanguageToggle } from '@/components/language-toggle';
 import { CartFloating } from '@/features/cart/components/cart-floating';
 import { DishModal } from '@/features/dish/components/dish-modal';
 import { toggleDishFavorite } from '@/features/dish/actions/dish-actions';
-import { DISH_CATEGORIES, getCategoryTheme, type DishCategory } from '@/features/dish/data/dishes';
-import type { Dish } from '@/features/dish/types';
+import { DISH_CATEGORIES, getCategoryTheme } from '@/features/dish/data/dishes';
+import type { Dish, DishCategory } from '@/features/dish/types';
 
 interface MenuClientProps {
   initialDishes: Dish[];
