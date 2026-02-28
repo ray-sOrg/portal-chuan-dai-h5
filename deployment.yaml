@@ -36,6 +36,7 @@ spec:
       containers:
         - name: portal-chuan-dai-h5
           image: __IMAGE_NAME__:__IMAGE_TAG__
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           env:
