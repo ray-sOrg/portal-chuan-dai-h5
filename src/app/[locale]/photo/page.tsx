@@ -2,8 +2,6 @@ import { getTranslations } from 'next-intl/server';
 import { getPhotos } from '@/features/photo/actions';
 import { getAuth } from '@/features/auth/queries/get-auth';
 import { PhotoGrid } from '@/features/photo/components';
-import { ThemeToggle } from '@/components/theme';
-import { LanguageToggle } from '@/components/language-toggle';
 import { UploadButton } from './upload-button';
 
 // 页面缓存 30 秒
@@ -20,19 +18,8 @@ export default async function PhotoPage() {
 
   return (
     <>
-      {/* Header */}
-      <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-50">
-        <div className="container mx-auto flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold">{t('photoWall.title')}</h1>
-          <div className="flex items-center gap-2">
-            <LanguageToggle />
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
-      <div className="flex-1 p-4 pb-24">
+      <div className="p-4">
         <div className="container mx-auto">
           <PhotoGrid initialPhotos={photos} hasMore={hasMore} />
         </div>

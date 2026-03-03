@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { ThemeProvider } from '@/components/theme';
 import { FooterNav } from '@/components/footer-nav';
+import { Header } from '@/components/header';
 import { NavigationSync } from '@/components/navigation-sync';
 import { LanguageDetector } from '@/components/language-detector';
 import type { Metadata } from 'next';
@@ -100,7 +101,8 @@ export default async function LocaleLayout({
         >
           <NextIntlClientProvider messages={messages}>
             <div className="flex flex-col min-h-screen">
-              <main className="flex-1 pb-20">
+              <Header />
+              <main className="flex-1 pt-12 overflow-hidden" style={{ paddingBottom: 'calc(3.5rem + 1rem)' }}>
                 {children}
               </main>
               <FooterNav />

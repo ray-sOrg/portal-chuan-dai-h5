@@ -12,8 +12,6 @@ import {
 } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import { Link } from "@/i18n/routing";
-import { ThemeToggle } from "@/components/theme";
-import { LanguageToggle } from "@/components/language-toggle";
 import { getAuth } from "@/features/auth/queries/get-auth";
 import { getUserProfile } from "@/features/auth/queries/get-user-profile";
 import { signInPath } from "@/paths";
@@ -26,35 +24,13 @@ export default async function ProfilePage() {
   const profile = await getUserProfile();
 
   return (
-    <div className="flex flex-1 flex-col min-h-screen bg-background text-foreground">
-      <ProfileHeader />
-
-      <main className="flex-1 p-4 pb-20">
-        <div className="container mx-auto space-y-6">
-          {user && profile ? (
-            <AuthenticatedContent profile={profile} />
-          ) : (
-            <GuestContent />
-          )}
-        </div>
-      </main>
+    <div className="container mx-auto space-y-6 p-4">
+      {user && profile ? (
+        <AuthenticatedContent profile={profile} />
+      ) : (
+        <GuestContent />
+      )}
     </div>
-  );
-}
-
-function ProfileHeader() {
-  const t = useTranslations();
-
-  return (
-    <header className="border-b border-border p-4 sticky top-0 bg-background/80 backdrop-blur-sm z-50">
-      <div className="container mx-auto flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">{t("common.profile")}</h1>
-        <div className="flex items-center gap-2">
-          <LanguageToggle />
-          <ThemeToggle />
-        </div>
-      </div>
-    </header>
   );
 }
 
