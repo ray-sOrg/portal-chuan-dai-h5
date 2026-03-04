@@ -176,10 +176,11 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
   }
 
   return (
-    // 整体高度 = 100dvh - header pt-12(3rem) - footer paddingBottom(calc(3.5rem + 1rem))
+    // 菜单组件在 main(pt-12, pb-[calc(3.5rem+1rem)]) 内
+    // 组件占满 main 内容区，用负 margin 消除外层多余 padding
     <div
-      className="flex flex-col bg-[#F5F0E8] text-foreground overflow-hidden"
-      style={{ height: 'calc(100dvh - 3rem - 3.5rem - 1rem)' }}
+      className="flex flex-col bg-[#F5F0E8] text-foreground overflow-hidden -mb-[calc(3.5rem+1rem)]"
+      style={{ height: 'calc(100dvh - 3rem)' }}
     >
       {/* 搜索栏 */}
       <div className="flex-none px-4 py-3 bg-[#F5F0E8]">
