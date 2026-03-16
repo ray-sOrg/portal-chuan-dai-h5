@@ -92,10 +92,10 @@ function AuthenticatedContent({
           {t("profile.myFavorites")}
         </h3>
         <div>
-          <Link href="/menu?tab=favorites" className="block">
+          <Link href={{ pathname: "/menu", query: { tab: "favorites" } }} className="block">
             <SettingsItem icon={UtensilsCrossed} label="我的菜单" />
           </Link>
-          <Link href="/photo?tab=favorites" className="block">
+          <Link href={{ pathname: "/photo", query: { tab: "favorites" } }} className="block">
             <SettingsItem icon={Image} label="我的照片" />
           </Link>
         </div>
