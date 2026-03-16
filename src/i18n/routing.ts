@@ -23,7 +23,9 @@ export const routing = defineRouting({
     '/profile/change-password': '/profile/change-password',
     '/sign-in': '/sign-in',
     '/sign-up': '/sign-up',
-    '/forgot-password': '/forgot-password'
+    '/forgot-password': '/forgot-password',
+    '/orders': '/orders',
+    '/orders/[id]': '/orders/[id]'
   }
 });
 

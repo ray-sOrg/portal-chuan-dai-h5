@@ -31,7 +31,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center">
       {/* 遮罩 */}
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
@@ -48,14 +48,39 @@ export function DishModal({ dish, onClose }: DishModalProps) {
         {/* 图片 */}
         <div className="aspect-video bg-muted relative">
           {dish.image ? (
-            <img
-              src={dish.image}
-              alt={dish.name}
-              className="w-full h-full object-cover"
-            />
+            <>
+              <img
+                src={dish.image}
+                alt={dish.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  target.nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+              {/* 默认占位图 */}
+              <div className="hidden w-full h-full flex flex-col items-center justify-center absolute inset-0">
+                <svg className="w-16 h-16 text-primary/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                  <path d="M15 11c0-1.66-1.34-3-3-3s-3 1.34-3 3" />
+                  <path d="M9 16h6" />
+                  <circle cx="8.5" cy="8.5" r="0.8" fill="currentColor" />
+                  <circle cx="15.5" cy="8.5" r="0.8" fill="currentColor" />
+                </svg>
+                <span className="text-xs text-primary/40 mt-2">暂无图片</span>
+              </div>
+            </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-              📷 {dish.name}
+            <div className="w-full h-full flex flex-col items-center justify-center text-primary/40">
+              <svg className="w-16 h-16 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                <path d="M15 11c0-1.66-1.34-3-3-3s-3 1.34-3 3" />
+                <path d="M9 16h6" />
+                <circle cx="8.5" cy="8.5" r="0.8" fill="currentColor" />
+                <circle cx="15.5" cy="8.5" r="0.8" fill="currentColor" />
+              </svg>
+              <span className="text-xs">{dish.name}</span>
             </div>
           )}
 
@@ -66,18 +91,13 @@ export function DishModal({ dish, onClose }: DishModalProps) {
         </div>
 
         {/* 内容 */}
-        <div className="p-4 space-y-4 overflow-y-auto pb-32">
-          {/* 标题和价格 */}
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-xl font-bold">{dish.name}</h2>
-              {dish.nameEn && (
-                <p className="text-sm text-muted-foreground">{dish.nameEn}</p>
-              )}
-            </div>
-            <span className="text-xl font-bold text-primary">
-              ¥{dish.price.toFixed(2)}
-            </span>
+        <div className="p-4 space-y-4 overflow-y-auto pb-40">
+          {/* 标题 */}
+          <div>
+            <h2 className="text-xl font-bold">{dish.name}</h2>
+            {dish.nameEn && (
+              <p className="text-sm text-muted-foreground">{dish.nameEn}</p>
+            )}
           </div>
 
           {/* 描述 */}
@@ -100,7 +120,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
           </div>
 
           {/* 数量选择 */}
-          <div className="flex items-center justify-between py-2 border-t border-b">
+          <div className="flex items-center justify-between py-2 border-t border-b border-border">
             <span className="font-medium">数量</span>
             <div className="flex items-center gap-3">
               <button
@@ -127,19 +147,30 @@ export function DishModal({ dish, onClose }: DishModalProps) {
               onChange={(e) => setRemark(e.target.value)}
               placeholder="例如：不加香菜、少放辣"
               rows={2}
-              className="w-full px-3 py-2 rounded-lg border bg-background focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:border-muted-foreground resize-none"
             />
           </div>
         </div>
 
         {/* 底部按钮 */}
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
+          <div className="flex items-center justify-between gap-3 mb-3">
+            <div className="text-sm text-muted-foreground">
+              <span>数量:</span>
+              <span className="ml-2 font-medium text-foreground">{quantity}</span>
+            </div>
+            {remark && (
+              <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                备注：{remark}
+              </div>
+            )}
+          </div>
           <button
             onClick={handleAddToCart}
-            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-md"
           >
             <ShoppingCart className="w-5 h-5" />
-            {t('addToMenu')} × {quantity} · ¥{(dish.price * quantity).toFixed(2)}
+            确认添加到菜单 × {quantity}
           </button>
         </div>
       </div>

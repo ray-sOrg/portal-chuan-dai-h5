@@ -128,7 +128,11 @@
     "favorited": "已收藏",
     "unfavorite": "已取消收藏",
     "empty": "暂无菜品",
-    "order": "点餐"
+    "order": "点餐",
+    "pullToRefresh": "下拉刷新",
+    "refreshing": "刷新中...",
+    "refreshed": "刷新成功",
+    "refreshError": "刷新失败"
   },
   "photoWall": {
     "title": "照片墙",

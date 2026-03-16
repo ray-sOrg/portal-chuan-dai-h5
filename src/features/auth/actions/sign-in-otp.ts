@@ -8,7 +8,7 @@ import {
   formErrorToActionState,
   toActionState,
 } from "@/components/form/utils/to-action-state";
-import { redirect } from "@/i18n/routing";
+import { redirect } from "next/navigation";
 import { lucia } from "@/lib/lucia";
 import { prisma } from "@/lib/prisma";
 
@@ -66,5 +66,5 @@ export const signInOtp = async (
     return formErrorToActionState(error, formData);
   }
 
-  return redirect({ href: "/profile", locale: "zh" });
+  redirect("/zh/profile");
 };

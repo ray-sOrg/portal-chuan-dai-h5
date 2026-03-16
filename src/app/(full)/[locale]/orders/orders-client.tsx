@@ -1,55 +1,30 @@
-import { Suspense } from 'react';
-import { getOrders } from '@/features/order/actions/order-actions';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { Locale } from 'next-intl';
-import { getTranslations } from 'next-intl/server';
-import { redirect } from 'next/navigation';
-import { getAuth } from '@/features/auth/queries/get-auth';
-import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
-export default async function OrdersPage({
-  params,
-}: {
-  params: Promise<{ locale: Locale }>;
-}) {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'order' });
-  const { user } = await getAuth();
+interface Order {
+  id: string;
+  orderNumber: string;
+  customerId: string;
+  customerName: string;
+  totalAmount: number;
+  status: string;
+  createdAt: Date;
+  items: any[];
+}
 
-  if (!user) {
-    redirect(`/${locale}/sign-in`);
-  }
+interface OrdersPageClientProps {
+  locale: string;
+  orders: Order[];
+  pendingOrders: Order[];
+}
 
-  // 获取订单列表
-  const orders = await getOrders();
-
-  // 获取待处理订单（所有人可见自己的待处理订单）
-  const pendingOrders = await prisma.order.findMany({
-    where: {
-      status: 'PENDING',
-      customerId: user.id,
-    },
-    include: {
-      items: true,
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return <Clock className="w-4 h-4 text-yellow-500" />;
-      case 'CONFIRMED':
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'COMPLETED':
-        return <CheckCircle className="w-4 h-4 text-blue-500" />;
-      case 'CANCELLED':
-        return <XCircle className="w-4 h-4 text-red-500" />;
-      default:
-        return null;
-    }
-  };
+export function OrdersPageClient({ locale, orders, pendingOrders }: OrdersPageClientProps) {
+  const t = useTranslations('order');
+  const router = useRouter();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -69,11 +44,14 @@ export default async function OrdersPage({
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b">
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur border-b border-gray-200">
         <div className="flex items-center gap-3 p-4">
-          <Link href={`/${locale}/menu`} className="p-2 -ml-2 hover:bg-muted rounded-full">
+          <button 
+            onClick={() => router.back()}
+            className="p-2 -ml-2 hover:bg-muted rounded-full"
+          >
             <ChevronLeft className="w-5 h-5" />
-          </Link>
+          </button>
           <h1 className="text-xl font-bold">{t('title')}</h1>
         </div>
       </header>
@@ -91,7 +69,7 @@ export default async function OrdersPage({
                 <Link
                   key={order.id}
                   href={`/${locale}/orders/${order.id}`}
-                  className="block bg-card rounded-xl p-4 border shadow-sm hover:shadow-md transition-shadow"
+                  className="block bg-card rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div>
@@ -105,7 +83,7 @@ export default async function OrdersPage({
                     </span>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {order.items.length} {t('items')} · ¥{order.totalAmount.toNumber().toFixed(2)}
+                    {order.items.length} {t('items')} · ¥{order.totalAmount.toFixed(2)}
                   </div>
                 </Link>
               ))}
@@ -126,7 +104,7 @@ export default async function OrdersPage({
                 <Link
                   key={order.id}
                   href={`/${locale}/orders/${order.id}`}
-                  className="block bg-card rounded-xl p-4 border shadow-sm hover:shadow-md transition-shadow"
+                  className="block bg-card rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div>
@@ -139,7 +117,7 @@ export default async function OrdersPage({
 
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>{order.items.length} {t('items')}</span>
-                    <span className="font-medium">¥{order.totalAmount.toNumber().toFixed(2)}</span>
+                    <span className="font-medium">¥{order.totalAmount.toFixed(2)}</span>
                   </div>
 
                   <div className="mt-2 text-xs text-muted-foreground">

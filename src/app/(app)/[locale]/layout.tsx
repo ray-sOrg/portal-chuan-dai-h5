@@ -14,7 +14,6 @@ type Props = {
   params: Promise<{ locale: string }>;
 };
 
-// 动态生成元数据
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'header' });
@@ -81,37 +80,30 @@ export default async function LocaleLayout({
 }: Props) {
   const { locale } = await params;
 
-  // Ensure that the incoming `locale` is valid
   if (!routing.locales.includes(locale as any)) {
     notFound();
   }
 
-  // Providing all messages to the client
-  // side is the easiest way to get started
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="sichuan"
-          themes={["sichuan", "yunnan"]}
-          disableTransitionOnChange
-        >
-          <NextIntlClientProvider messages={messages}>
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              <main className="flex-1 pt-12 overflow-hidden" style={{ paddingBottom: 'calc(3.5rem + 1rem)' }}>
-                {children}
-              </main>
-              <FooterNav />
-              <NavigationSync />
-              <LanguageDetector />
-            </div>
-          </NextIntlClientProvider>
-        </ThemeProvider>
-      </body>
-    </html>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="sichuan"
+      themes={["sichuan", "yunnan"]}
+      disableTransitionOnChange
+    >
+      <NextIntlClientProvider messages={messages}>
+        <div className="flex flex-col min-h-screen">
+          <Header />
+          <main className="flex-1 pt-12 overflow-hidden" style={{ paddingBottom: 'calc(3.5rem + 1rem)' }}>
+            {children}
+          </main>
+          <FooterNav />
+          <NavigationSync />
+          <LanguageDetector />
+        </div>
+      </NextIntlClientProvider>
+    </ThemeProvider>
   );
 }

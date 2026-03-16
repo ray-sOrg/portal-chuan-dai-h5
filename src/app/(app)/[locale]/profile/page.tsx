@@ -9,6 +9,9 @@ import {
   Shield,
   ChevronRight,
   Key,
+  UtensilsCrossed,
+  Image,
+  Receipt,
 } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import { Link } from "@/i18n/routing";
@@ -26,7 +29,9 @@ export default async function ProfilePage() {
   return (
     <div className="container mx-auto space-y-6 p-4">
       {user && profile ? (
-        <AuthenticatedContent profile={profile} />
+        <AuthenticatedContent 
+          profile={profile} 
+        />
       ) : (
         <GuestContent />
       )}
@@ -66,7 +71,11 @@ type Profile = {
   lastLoginIp: string | null;
 };
 
-function AuthenticatedContent({ profile }: { profile: Profile }) {
+function AuthenticatedContent({ 
+  profile,
+}: { 
+  profile: Profile;
+}) {
   const t = useTranslations();
 
   return (
@@ -77,24 +86,31 @@ function AuthenticatedContent({ profile }: { profile: Profile }) {
       </Suspense>
 
       {/* My Favorites */}
-      <section className="card-base p-4">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+      <section className="card-base overflow-hidden">
+        <h3 className="text-lg font-semibold p-4 flex items-center gap-2">
           <Heart className="w-5 h-5 text-primary" />
           {t("profile.myFavorites")}
         </h3>
-        <div className="text-center text-muted-foreground">
-          暂无收藏
+        <div>
+          <Link href="/menu?tab=favorites" className="block">
+            <SettingsItem icon={UtensilsCrossed} label="我的菜单" />
+          </Link>
+          <Link href="/photo?tab=favorites" className="block">
+            <SettingsItem icon={Image} label="我的照片" />
+          </Link>
         </div>
       </section>
 
       {/* Order History */}
-      <section className="card-base p-4">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5 text-primary" />
+      <section className="card-base overflow-hidden">
+        <h3 className="text-lg font-semibold p-4 flex items-center gap-2">
+          <Receipt className="w-5 h-5 text-primary" />
           {t("profile.orderHistory")}
         </h3>
-        <div className="text-center text-muted-foreground">
-          暂无订单
+        <div>
+          <Link href="/orders" className="block">
+            <SettingsItem icon={Clock} label="历史订单" />
+          </Link>
         </div>
       </section>
 
@@ -124,9 +140,15 @@ function AuthenticatedContent({ profile }: { profile: Profile }) {
           <Link href="/profile/change-password" className="block">
             <SettingsItem icon={Key} label={t("auth.changePassword")} />
           </Link>
-          <SettingsItem icon={Settings} label={t("profile.generalSettings")} />
-          <SettingsItem icon={Bell} label={t("profile.notifications")} />
-          <SettingsItem icon={Shield} label={t("profile.privacyPolicy")} />
+          <Link href="/settings/general" className="block">
+            <SettingsItem icon={Settings} label={t("profile.generalSettings")} />
+          </Link>
+          <Link href="/settings/notifications" className="block">
+            <SettingsItem icon={Bell} label={t("profile.notifications")} />
+          </Link>
+          <Link href="/settings/privacy" className="block">
+            <SettingsItem icon={Shield} label={t("profile.privacyPolicy")} />
+          </Link>
           <LogoutButton />
         </div>
       </section>
@@ -137,17 +159,19 @@ function AuthenticatedContent({ profile }: { profile: Profile }) {
 function SettingsItem({
   icon: Icon,
   label,
+  iconColor = "",
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
+  iconColor?: string;
 }) {
   return (
-    <button className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors border-b border-border">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors border-b border-border cursor-pointer">
+      <div className={`flex items-center gap-3 ${iconColor || ''}`}>
         <Icon className="w-5 h-5" />
         <span className="font-medium">{label}</span>
       </div>
       <ChevronRight className="w-5 h-5 text-muted-foreground" />
-    </button>
+    </div>
   );
 }

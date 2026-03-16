@@ -30,7 +30,7 @@ export function LanguageToggle() {
     updateLastUsedLocale(supportedLocale);
 
     // 路由跳转
-    router.replace(pathname, { locale: newLocale });
+    router.replace(pathname as any, { locale: newLocale });
     setIsOpen(false);
   };
 

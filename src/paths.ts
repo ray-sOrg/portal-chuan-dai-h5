@@ -8,3 +8,6 @@ export const signUpPath = "/sign-up";
 export const menuPath = "/menu";
 export const photoPath = "/photo";
 export const profilePath = "/profile";
+
+// 订单相关路径
+export const ordersPath = "/orders";

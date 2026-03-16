@@ -23,6 +23,7 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
   const [favorites, setFavorites] = useState<Set<string>>(initialFavorites);
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [dishes] = useState<Dish[]>(initialDishes);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // 是否正在通过点击左侧导航触发滚动（期间不响应滚动事件反向同步）
   const isClickScrollingRef = useRef(false);
@@ -141,6 +142,44 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
     setSelectedDish(dish);
   }, []);
 
+  // 下拉刷新 - 原生实现
+  const [pullY, setPullY] = useState(0);
+  const startYRef = useRef(0);
+  const pullingRef = useRef(false);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const container = rightListRef.current;
+    if (!container || container.scrollTop > 0) return;
+    startYRef.current = e.touches[0].clientY;
+    pullingRef.current = true;
+  }, []);
+
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!pullingRef.current) return;
+    const deltaY = e.touches[0].clientY - startYRef.current;
+    if (deltaY > 0) {
+      setPullY(Math.min(deltaY * 0.5, 100));
+    }
+  }, []);
+
+  const onTouchEnd = useCallback(async () => {
+    if (!pullingRef.current) return;
+    pullingRef.current = false;
+    
+    if (pullY > 60) {
+      setIsRefreshing(true);
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        toast.success(t('menu.refreshed'));
+      } catch (error) {
+        toast.error(t('menu.refreshError'));
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
+    setPullY(0);
+  }, [pullY, t]);
+
   // 点击左侧分类 → 右侧滚动到对应锚点
   const handleCategoryClick = useCallback((category: DishCategory) => {
     setActiveCategory(category);
@@ -164,9 +203,9 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
   // 空状态
   if (dishes.length === 0) {
     return (
-      <div className="flex flex-col h-full bg-[#F5F0E8]">
+      <div className="flex flex-col h-full bg-background">
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center text-gray-500">
+          <div className="text-center text-muted-foreground">
             <p className="text-lg mb-2">{t('menu.empty')}</p>
             <p className="text-sm">暂无菜品</p>
           </div>
@@ -179,19 +218,19 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
     // 菜单组件在 main(pt-12, pb-[calc(3.5rem+1rem)]) 内
     // 组件占满 main 内容区，用负 margin 消除外层多余 padding
     <div
-      className="flex flex-col bg-[#F5F0E8] text-foreground overflow-hidden -mb-[calc(3.5rem+1rem)]"
+      className="flex flex-col bg-background text-foreground overflow-hidden -mb-[calc(3.5rem+1rem)]"
       style={{ height: 'calc(100dvh - 3rem)' }}
     >
       {/* 搜索栏 */}
-      <div className="flex-none px-4 py-3 bg-[#F5F0E8]">
+      <div className="flex-none px-4 py-3 bg-background">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
             placeholder="搜索菜品"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-9 pl-9 pr-4 rounded-full bg-white border border-[#E8E0D5] text-sm focus:outline-none focus:border-[#D4A853]"
+            className="w-full h-9 pl-9 pr-4 rounded-full bg-white border border-border text-sm focus:outline-none focus:border-primary"
           />
         </div>
       </div>
@@ -202,7 +241,7 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
         {/* 左侧分类导航 */}
         <aside
           ref={leftNavRef}
-          className="w-[72px] flex-none bg-[#EEEBE3] overflow-y-auto"
+          className="w-[72px] flex-none bg-background overflow-y-auto"
           style={{ scrollbarWidth: 'none' }}
         >
           {DISH_CATEGORIES.map((category) => {
@@ -214,8 +253,8 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
                 onClick={() => handleCategoryClick(category.id)}
                 className={`w-full min-h-[56px] px-1 flex flex-col items-center justify-center text-center gap-0.5 transition-colors border-l-[3px] ${
                   isActive
-                    ? 'bg-white border-[#D4A853] text-[#8B6914]'
-                    : 'border-transparent text-gray-500'
+                    ? 'bg-white border-primary text-primary'
+                    : 'border-transparent text-muted-foreground'
                 }`}
               >
                 <span className={`text-xs leading-tight font-medium ${isActive ? 'font-semibold' : ''}`}>
@@ -229,9 +268,22 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
         {/* 右侧菜品列表 */}
         <main
           ref={rightListRef}
-          className="flex-1 overflow-y-auto bg-[#F5F0E8]"
+          className="flex-1 overflow-y-auto bg-background"
           style={{ scrollbarWidth: 'none' }}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
+          {/* 下拉刷新指示器 */}
+          {(pullY > 0 || isRefreshing) && (
+            <div 
+              className="sticky top-0 left-0 right-0 flex items-center justify-center py-3 bg-primary/10 z-10"
+            >
+              <div className="text-sm text-primary font-medium">
+                {isRefreshing ? '刷新中...' : pullY > 60 ? '松开刷新' : '下拉刷新'}
+              </div>
+            </div>
+          )}
           {DISH_CATEGORIES.map((category) => {
             const categoryDishes = dishesByCategory.get(category.id) || [];
             if (categoryDishes.length === 0 && searchQuery) return null;
@@ -243,8 +295,8 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
                 ref={(el) => { if (el) categoryRefs.current.set(category.id, el); }}
               >
                 {/* 分类标题行 */}
-                <div className="px-3 py-2 bg-[#EDE8DF]">
-                  <h2 className="text-sm font-semibold text-gray-800">
+                <div className="px-3 py-2 bg-background">
+                  <h2 className="text-sm font-semibold text-foreground">
                     {t(category.labelKey)}
                   </h2>
                 </div>
@@ -261,18 +313,28 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
                           onClick={() => handleOpenDish(dish)}
                         >
                           {/* 图片 */}
-                          <div className="aspect-square bg-gray-100 relative">
-                            {dish.image ? (
-                              <img
-                                src={dish.image}
-                                alt={dish.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-300 text-3xl">
-                                🍽️
-                              </div>
-                            )}
+                          <div className="aspect-square bg-muted relative">
+                            <img
+                              src={dish.image || ''}
+                              alt={dish.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                const target = e.currentTarget;
+                                target.style.display = 'none';
+                                target.nextElementSibling?.classList.remove('hidden');
+                              }}
+                            />
+                            {/* 默认占位图 */}
+                            <div className={`w-full h-full flex flex-col items-center justify-center absolute inset-0 ${dish.image ? 'hidden' : ''}`}>
+                              <svg className="w-12 h-12 text-primary/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
+                                <path d="M15 11c0-1.66-1.34-3-3-3s-3 1.34-3 3" />
+                                <path d="M9 16h6" />
+                                <circle cx="8.5" cy="8.5" r="0.8" fill="currentColor" />
+                                <circle cx="15.5" cy="8.5" r="0.8" fill="currentColor" />
+                              </svg>
+                              <span className="text-[11px] text-primary/40 mt-1">暂无图片</span>
+                            </div>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleToggleFavorite(dish.id); }}
                               className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center bg-white/80"
@@ -285,19 +347,19 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
 
                           {/* 信息 */}
                           <div className="p-2">
-                            <h3 className="font-medium text-xs text-gray-900 truncate">
+                            <h3 className="font-medium text-xs text-foreground truncate">
                               {dish.name}
                             </h3>
-                            <p className="text-[11px] text-gray-400 truncate mt-0.5">
+                            <p className="text-[11px] text-muted-foreground truncate mt-0.5">
                               {dish.description || dish.nameEn || ''}
                             </p>
                             <div className="flex items-center justify-between mt-1.5">
-                              <span className="text-sm font-bold text-[#D4A853]">
-                                ¥{typeof dish.price === 'number' ? dish.price.toFixed(0) : dish.price}
+                              <span className="text-[11px] text-muted-foreground">
+                                {dish.isSpicy ? '🌶️ 辣' : ''}{dish.isVegetarian ? ' 🥬 素' : ''}
                               </span>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleOpenDish(dish); }}
-                                className="w-6 h-6 rounded-full bg-[#D4A853] text-white flex items-center justify-center"
+                                className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center"
                               >
                                 <Plus className="w-3.5 h-3.5" />
                               </button>

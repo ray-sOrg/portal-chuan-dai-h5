@@ -35,7 +35,7 @@ export function CartFloating() {
         clearCart();
         setIsOpen(false);
         // 跳转到订单页面
-        window.location.href = `/orders`;
+        window.location.href = `/zh/orders`;
       } else {
         toast.error(result.message || '下单失败');
       }
@@ -65,7 +65,7 @@ export function CartFloating() {
 
       {/* 购物车面板 */}
       {isOpen && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-[60]">
           {/* 遮罩 */}
           <div 
             className="absolute inset-0 bg-black/50" 
@@ -101,7 +101,7 @@ export function CartFloating() {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium truncate">{item.dish.name}</h3>
                         <p className="text-sm text-muted-foreground">
-                          ¥{item.dish.price.toFixed(2)} x {item.quantity}
+                          x {item.quantity}
                         </p>
                         {item.remark && (
                           <p className="text-xs text-muted-foreground mt-1">
@@ -142,10 +142,10 @@ export function CartFloating() {
 
             {/* Footer */}
             <div className="border-t p-4 space-y-4">
-              {/* 总价 */}
+              {/* 数量统计 */}
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">{t('cart.total')}</span>
-                <span className="text-xl font-bold">¥{total.toFixed(2)}</span>
+                <span className="text-xl font-bold">{itemCount} 份</span>
               </div>
 
               {/* 按钮 */}

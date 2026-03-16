@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 
-import { redirect } from "@/i18n/routing";
+import { redirect } from "next/navigation";
 import { lucia } from "@/lib/lucia";
 import { profilePath } from "@/paths";
 
@@ -12,7 +12,7 @@ export const signOut = async () => {
   const { session } = await getAuth();
 
   if (!session) {
-    return redirect({ href: profilePath, locale: "zh" });
+    redirect("/zh/profile");
   }
 
   await lucia.invalidateSession(session.id);
@@ -26,5 +26,5 @@ export const signOut = async () => {
     sessionCookie.attributes
   );
 
-  return redirect({ href: profilePath, locale: "zh" });
+  redirect("/zh/profile");
 };

@@ -74,8 +74,8 @@ export async function PersonalRecommendations() {
                       {dish.description}
                     </p>
                     <div className="flex justify-between items-center mt-1">
-                      <span className="text-primary font-semibold text-sm">
-                        ¥{dish.price.toString()}
+                      <span className="text-muted-foreground text-xs truncate">
+                        {dish.isSpicy ? '🌶️' : ''}{dish.isVegetarian ? '🥬' : ''}
                       </span>
                       <button className="bg-primary text-primary-foreground w-5 h-5 rounded-full text-xs">
                         +

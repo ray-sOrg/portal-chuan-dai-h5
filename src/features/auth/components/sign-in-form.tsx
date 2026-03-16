@@ -13,7 +13,7 @@ interface SignInFormProps {
     redirectTo?: string;
 }
 
-export function SignInForm({ redirectTo = '/profile' }: SignInFormProps) {
+export function SignInForm({ redirectTo = '/zh/profile' }: SignInFormProps) {
     const t = useTranslations("auth");
 
     // 绑定 redirectTo 参数到 signIn action
