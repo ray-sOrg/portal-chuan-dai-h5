@@ -25,7 +25,10 @@ export const routing = defineRouting({
     '/sign-up': '/sign-up',
     '/forgot-password': '/forgot-password',
     '/orders': '/orders',
-    '/orders/[id]': '/orders/[id]'
+    '/orders/[id]': '/orders/[id]',
+    '/settings/general': '/settings/general',
+    '/settings/notifications': '/settings/notifications',
+    '/settings/privacy': '/settings/privacy',
   }
 });
 
