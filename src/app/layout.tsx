@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import "./globals.css";
+import VersionInfo from "@/components/VersionInfo";
 
 export const metadata: Metadata = {
   title: "Chuan-Dai",
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body>
         {children}
         <Toaster position="top-center" />
+        <VersionInfo />
       </body>
     </html>
   );
