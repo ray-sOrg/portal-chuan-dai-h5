@@ -1,14 +1,20 @@
 'use client';
 
 import { useRouter } from '@/i18n/routing';
+import { useLocale, useTranslations } from 'next-intl';
+import { ordersPath } from '@/paths';
+
+type OrderItem = {
+  id: string;
+};
 
 interface Order {
   id: string;
   orderNumber: string;
   status: string;
-  items: any[];
-  totalAmount: any;
-  createdAt: Date;
+  items: OrderItem[];
+  totalAmount: number;
+  createdAt: Date | string;
 }
 
 interface OrderHistoryProps {
@@ -17,11 +23,17 @@ interface OrderHistoryProps {
 
 export function OrderHistory({ orders }: OrderHistoryProps) {
   const router = useRouter();
+  const locale = useLocale();
+  const t = useTranslations('order');
+  const moneyFormatter = new Intl.NumberFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
+    style: 'currency',
+    currency: 'CNY',
+  });
 
   if (orders.length === 0) {
     return (
       <div className="text-center text-muted-foreground">
-        暂无订单
+        {t('empty')}
       </div>
     );
   }
@@ -31,7 +43,7 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
       {orders.slice(0, 5).map((order) => (
         <button
           key={order.id}
-          onClick={() => window.location.href = `/zh/orders/${order.id}`}
+          onClick={() => router.push({ pathname: '/orders/[id]', params: { id: order.id } })}
           className="w-full block p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors text-left"
         >
           <div className="flex justify-between items-start mb-2">
@@ -42,24 +54,24 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
               order.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800' :
               'bg-red-100 text-red-800'
             }`}>
-              {order.status}
+              {t(`status.${order.status.toLowerCase()}`)}
             </span>
           </div>
           <div className="flex justify-between text-sm text-muted-foreground">
-            <span>{order.items.length} 件商品</span>
-            <span className="font-semibold text-primary">¥{order.totalAmount.toString()}</span>
+            <span>{order.items.length} {t('items')}</span>
+            <span className="font-semibold text-primary">{moneyFormatter.format(order.totalAmount)}</span>
           </div>
           <div className="text-xs text-muted-foreground mt-1">
-            {new Date(order.createdAt).toLocaleString()}
+            {new Date(order.createdAt).toLocaleString(locale)}
           </div>
         </button>
       ))}
       {orders.length > 5 && (
         <button
-          onClick={() => window.location.href = '/zh/orders'}
+          onClick={() => router.push(ordersPath)}
           className="w-full block text-center text-primary text-sm font-medium hover:underline"
         >
-          查看全部订单 →
+          {t('allOrders')} →
         </button>
       )}
     </div>

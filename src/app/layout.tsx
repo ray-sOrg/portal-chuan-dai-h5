@@ -1,7 +1,22 @@
 import type { Metadata } from "next";
+import { Noto_Sans_SC, Noto_Serif_SC } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import VersionInfo from "@/components/VersionInfo";
+
+const bodySans = Noto_Sans_SC({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-body-sans",
+  display: "swap",
+});
+
+const displaySerif = Noto_Serif_SC({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-display-serif",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Chuan-Dai",
@@ -15,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh" suppressHydrationWarning>
-      <body>
+      <body className={`${bodySans.variable} ${displaySerif.variable}`}>
         {children}
         <Toaster position="top-center" />
         <VersionInfo />

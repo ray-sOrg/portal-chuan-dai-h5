@@ -37,14 +37,9 @@ export default function middleware(request: NextRequest) {
     pathWithoutLocale.startsWith(path)
   );
 
-  // 检查是否是认证页面
-  const isAuthPath = authPaths.some((path) =>
-    pathWithoutLocale.startsWith(path)
-  );
-
   // 未登录用户访问受保护页面 -> 重定向到登录页
   if (isProtectedPath && !isAuthenticated) {
-    const locale = pathname.match(/^\/(zh|en)/)?.[1] || "zh";
+    const locale = pathname.match(/^\/(zh|en)/)?.[1] || detectPreferredLanguage(request);
     const signInUrl = new URL(`/${locale}/sign-in`, request.url);
     signInUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(signInUrl);
@@ -58,6 +53,7 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Match only internationalized pathnames
-  matcher: ["/", "/(zh|en)/:path*"],
+  // Match all app routes except API, Next internals and static files,
+  // so bare paths like /profile can still be locale-redirected.
+  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
 };

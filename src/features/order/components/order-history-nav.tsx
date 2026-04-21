@@ -2,9 +2,12 @@
 
 import { ChevronRight, ClipboardList, History } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/routing';
+import { ordersPath } from '@/paths';
 
 export function OrderHistoryNav() {
   const t = useTranslations();
+  const router = useRouter();
 
   return (
     <section className="card-base overflow-hidden">
@@ -14,7 +17,7 @@ export function OrderHistoryNav() {
       </h3>
       <div>
         <button
-          onClick={() => window.location.href = '/zh/orders'}
+          onClick={() => router.push(ordersPath)}
           className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors border-b border-border"
         >
           <div className="flex items-center gap-3">

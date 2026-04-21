@@ -12,7 +12,7 @@ export const signOut = async () => {
   const { session } = await getAuth();
 
   if (!session) {
-    redirect("/zh/profile");
+    redirect(profilePath);
   }
 
   await lucia.invalidateSession(session.id);
@@ -26,5 +26,5 @@ export const signOut = async () => {
     sessionCookie.attributes
   );
 
-  redirect("/zh/profile");
+  redirect(profilePath);
 };

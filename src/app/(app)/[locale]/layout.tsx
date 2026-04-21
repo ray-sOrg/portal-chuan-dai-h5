@@ -80,7 +80,7 @@ export default async function LocaleLayout({
 }: Props) {
   const { locale } = await params;
 
-  if (!routing.locales.includes(locale as any)) {
+  if (!routing.locales.includes(locale as "en" | "zh")) {
     notFound();
   }
 
@@ -96,7 +96,13 @@ export default async function LocaleLayout({
       <NextIntlClientProvider messages={messages}>
         <div className="flex flex-col min-h-screen">
           <Header />
-          <main className="flex-1 pt-12 overflow-hidden" style={{ paddingBottom: 'calc(3.5rem + 1rem)' }}>
+          <main
+            className="flex-1 overflow-hidden"
+            style={{
+              paddingTop: "calc(3.95rem + env(safe-area-inset-top, 0px))",
+              paddingBottom: "calc(6.5rem + env(safe-area-inset-bottom, 0px))",
+            }}
+          >
             {children}
           </main>
           <FooterNav />

@@ -13,6 +13,7 @@ import {
   Image,
   Receipt,
 } from "lucide-react";
+
 import { Spinner } from "@/components/spinner";
 import { Link } from "@/i18n/routing";
 import { getAuth } from "@/features/auth/queries/get-auth";
@@ -27,11 +28,9 @@ export default async function ProfilePage() {
   const profile = await getUserProfile();
 
   return (
-    <div className="container mx-auto space-y-6 p-4">
+    <div className="mx-auto max-w-5xl space-y-5 px-4 pb-4">
       {user && profile ? (
-        <AuthenticatedContent 
-          profile={profile} 
-        />
+        <AuthenticatedContent profile={profile} />
       ) : (
         <GuestContent />
       )}
@@ -43,14 +42,17 @@ function GuestContent() {
   const t = useTranslations("auth");
 
   return (
-    <section className="card-base p-6 text-center">
-      <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-        <User className="w-8 h-8 text-primary" />
+    <section className="card-base overflow-hidden p-6 text-center">
+      <div className="mb-5 inline-flex rounded-full border border-border/70 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+        Chuan-Dai Club
       </div>
-      <p className="text-muted-foreground mb-4">{t("loginRequired")}</p>
+      <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-[1.75rem] border border-white/55 bg-[linear-gradient(135deg,var(--hero-start),var(--hero-end))] shadow-[var(--shadow-soft)]">
+        <User className="h-8 w-8 text-primary" />
+      </div>
+      <p className="mb-4 text-muted-foreground">{t("loginRequired")}</p>
       <Link
         href={signInPath}
-        className="inline-block bg-primary text-primary-foreground px-6 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+        className="inline-flex rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-[var(--shadow-soft)] transition-transform duration-200 hover:-translate-y-0.5 hover:bg-primary/90"
       >
         {t("signIn")}
       </Link>
@@ -71,27 +73,18 @@ type Profile = {
   lastLoginIp: string | null;
 };
 
-function AuthenticatedContent({ 
-  profile,
-}: { 
-  profile: Profile;
-}) {
+function AuthenticatedContent({ profile }: { profile: Profile }) {
   const t = useTranslations();
 
   return (
     <>
-      {/* User Profile Section */}
       <Suspense fallback={<Spinner />}>
         <ProfileSection profile={profile} />
       </Suspense>
 
-      {/* My Favorites */}
       <section className="card-base overflow-hidden">
-        <h3 className="text-lg font-semibold p-4 flex items-center gap-2">
-          <Heart className="w-5 h-5 text-primary" />
-          {t("profile.myFavorites")}
-        </h3>
-        <div>
+        <SectionHeading icon={Heart} title={t("profile.myFavorites")} />
+        <div className="grid gap-3 p-4 pt-0 sm:grid-cols-2">
           <Link href={{ pathname: "/menu", query: { tab: "favorites" } }} className="block">
             <SettingsItem icon={UtensilsCrossed} label="我的菜单" />
           </Link>
@@ -101,42 +94,47 @@ function AuthenticatedContent({
         </div>
       </section>
 
-      {/* Order History */}
-      <section className="card-base overflow-hidden">
-        <h3 className="text-lg font-semibold p-4 flex items-center gap-2">
-          <Receipt className="w-5 h-5 text-primary" />
-          {t("profile.orderHistory")}
-        </h3>
-        <div>
-          <Link href="/orders" className="block">
-            <SettingsItem icon={Clock} label="历史订单" />
-          </Link>
-        </div>
+      <section className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+        <section className="card-base overflow-hidden">
+          <SectionHeading icon={Receipt} title={t("profile.orderHistory")} />
+          <div className="p-4 pt-0">
+            <Link href="/orders" className="block">
+              <SettingsItem icon={Clock} label="历史订单" />
+            </Link>
+          </div>
+        </section>
+
+        {profile.lastLoginAt && (
+          <section className="card-base p-4">
+            <div className="mb-4 flex items-center gap-2 text-base font-semibold">
+              <Shield className="h-5 w-5 text-primary" />
+              {t("profile.appSettings")}
+            </div>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <div className="settings-tile rounded-[1.2rem] p-3">
+                <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
+                  <Clock className="h-4 w-4 text-primary" />
+                  {t("auth.lastLoginTime")}
+                </div>
+                <span>{new Date(profile.lastLoginAt).toLocaleString()}</span>
+              </div>
+              {profile.lastLoginIp && (
+                <div className="settings-tile rounded-[1.2rem] p-3">
+                  <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
+                    <Shield className="h-4 w-4 text-primary" />
+                    {t("auth.lastLoginIp")}
+                  </div>
+                  <span>{profile.lastLoginIp}</span>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
       </section>
 
-      {/* Last Login Info */}
-      {profile.lastLoginAt && (
-        <section className="card-base p-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="w-4 h-4" />
-            <span>{t("auth.lastLoginTime")}: {new Date(profile.lastLoginAt).toLocaleString()}</span>
-          </div>
-          {profile.lastLoginIp && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-              <Shield className="w-4 h-4" />
-              <span>{t("auth.lastLoginIp")}: {profile.lastLoginIp}</span>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* App Settings */}
       <section className="card-base overflow-hidden">
-        <h3 className="text-lg font-semibold p-4 flex items-center gap-2">
-          <Settings className="w-5 h-5 text-primary" />
-          {t("profile.appSettings")}
-        </h3>
-        <div>
+        <SectionHeading icon={Settings} title={t("profile.appSettings")} />
+        <div className="grid gap-3 p-4 pt-0 sm:grid-cols-2">
           <Link href="/profile/change-password" className="block">
             <SettingsItem icon={Key} label={t("auth.changePassword")} />
           </Link>
@@ -149,10 +147,34 @@ function AuthenticatedContent({
           <Link href="/settings/privacy" className="block">
             <SettingsItem icon={Shield} label={t("profile.privacyPolicy")} />
           </Link>
+        </div>
+        <div className="px-4 pb-4">
           <LogoutButton />
         </div>
       </section>
     </>
+  );
+}
+
+function SectionHeading({
+  icon: Icon,
+  title,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+}) {
+  return (
+    <div className="flex items-center justify-between p-4">
+      <h3 className="flex items-center gap-2 text-lg font-semibold">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Icon className="h-5 w-5" />
+        </span>
+        {title}
+      </h3>
+      <span className="text-xs uppercase tracking-[0.26em] text-muted-foreground">
+        Curated
+      </span>
+    </div>
   );
 }
 
@@ -166,12 +188,12 @@ function SettingsItem({
   iconColor?: string;
 }) {
   return (
-    <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors border-b border-border cursor-pointer">
-      <div className={`flex items-center gap-3 ${iconColor || ''}`}>
-        <Icon className="w-5 h-5" />
+    <div className="settings-tile group flex items-center justify-between rounded-[1.35rem] p-4 transition-transform duration-200 hover:-translate-y-0.5 hover:bg-primary/10">
+      <div className={`flex items-center gap-3 ${iconColor || ""}`}>
+        <Icon className="h-5 w-5" />
         <span className="font-medium">{label}</span>
       </div>
-      <ChevronRight className="w-5 h-5 text-muted-foreground" />
+      <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform duration-200 group-hover:translate-x-1 group-hover:text-primary" />
     </div>
   );
 }

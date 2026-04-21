@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { FieldError, Form, SubmitButton } from "@/components/form";
 import { Link } from "@/i18n/routing";
 import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
-import { signUpPath } from "@/paths";
+import { profilePath, signUpPath } from "@/paths";
 
 import { signIn } from "../actions/sign-in";
 
@@ -13,7 +13,7 @@ interface SignInFormProps {
     redirectTo?: string;
 }
 
-export function SignInForm({ redirectTo = '/zh/profile' }: SignInFormProps) {
+export function SignInForm({ redirectTo = profilePath }: SignInFormProps) {
     const t = useTranslations("auth");
 
     // 绑定 redirectTo 参数到 signIn action

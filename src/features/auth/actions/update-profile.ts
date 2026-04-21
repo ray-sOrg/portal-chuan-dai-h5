@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import {
@@ -45,6 +46,9 @@ export const updateProfile = async (
         bio: data.bio,
       },
     });
+
+    revalidatePath("/profile");
+    revalidatePath("/profile/edit-profile");
 
     return toActionState("SUCCESS", "资料更新成功", formData);
   } catch (error) {

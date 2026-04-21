@@ -12,7 +12,7 @@ export function LogoutButton() {
         <form action={signOut}>
             <button
                 type="submit"
-                className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors text-destructive"
+                className="settings-tile flex w-full items-center justify-between rounded-[1.35rem] p-4 text-destructive transition-transform duration-200 hover:-translate-y-0.5"
             >
                 <div className="flex items-center gap-3">
                     <LogOut className="w-5 h-5" />

@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
-/* 移动端响应式基准字体大小 */
+:root {
+  --font-display: var(--font-display-serif);
+  --font-body: var(--font-body-sans);
+}
+
 html {
-  /* 最小 14px，基于视口宽度动态计算，最大 18px */
-  /* 计算公式：14px + (18-14) * ((100vw - 320px) / (768-320)) */
   font-size: clamp(
     14px,
     calc(14px + (18 - 14) * ((100vw - 320px) / (768 - 320))),
@@ -11,124 +13,118 @@ html {
   );
 }
 
-/* 川味主题 - 四川麻辣红 */
-/* 关键词：麻、辣、烟火气、厚重、不浮躁 */
 .sichuan {
-  --radius: 0.65rem;
-  /* 背景色：暖白底色 #FFFAF5 */
-  --background: #FFFAF5;
-  /* 前景色：深炭灰正文 #2B2B2B */
-  --foreground: #2B2B2B;
-  /* 卡片 */
-  --card: #FFFAF5;
-  --card-foreground: #2B2B2B;
-  /* 弹出层 */
-  --popover: #FFFFFF;
-  --popover-foreground: #2B2B2B;
-  /* 主色：麻辣深红 #8C1D18 */
-  --primary: #8C1D18;
-  --primary-foreground: #FFFFFF;
-  /* 次要色：辣椒红 #B1120A */
-  --secondary: #B1120A;
-  --secondary-foreground: #FFFFFF;
-  /* 柔和色：浅红背景 #F7E6E4 */
-  --muted: #F7E6E4;
-  /* 次级文字灰 #6B6B6B */
-  --muted-foreground: #6B6B6B;
-  /* 强调色：深红/酱红 #5A0F0C */
-  --accent: #5A0F0C;
-  --accent-foreground: #FFFFFF;
-  /* 危险色：辣椒红 #B1120A */
-  --destructive: #B1120A;
-  /* 边框/分割线 - 更淡 */
-  --border: #EDE9E4;
-  --input: #EDE9E4;
-  /* 焦点环：主色 */
-  --ring: #8C1D18;
-  /* 语义化颜色 */
-  --success: #28A745;
-  --success-foreground: #FFFFFF;
-  --warning: #FFC107;
-  --warning-foreground: #2B2B2B;
-  --info: #16A2B7;
-  --info-foreground: #FFFFFF;
-  /* 图表颜色 - 川味红系 */
-  --chart-1: #8C1D18; /* 主红 */
-  --chart-2: #B1120A; /* 辣椒红 */
-  --chart-3: #D43C2C; /* 亮红 */
-  --chart-4: #5A0F0C; /* 深红 */
-  --chart-5: #FFC107; /* 点缀黄 */
-  /* 侧边栏 */
-  --sidebar: #FFFAF5;
-  --sidebar-foreground: #2B2B2B;
-  --sidebar-primary: #8C1D18;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #B1120A;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #EDE9E4;
-  --sidebar-ring: #8C1D18;
+  --radius: 1.35rem;
+  --background: #f7f0e8;
+  --foreground: #2e1c17;
+  --card: #fff8f1;
+  --card-foreground: #2e1c17;
+  --popover: #fffaf5;
+  --popover-foreground: #2e1c17;
+  --primary: #8c1d18;
+  --primary-foreground: #ffffff;
+  --secondary: #c4471c;
+  --secondary-foreground: #fff9f4;
+  --muted: #efe2d5;
+  --muted-foreground: #6f5b50;
+  --accent: #5e2016;
+  --accent-foreground: #fffaf6;
+  --destructive: #b8331a;
+  --border: #dcc8b5;
+  --input: #e7d7c9;
+  --ring: #b44a24;
+  --success: #28a745;
+  --success-foreground: #ffffff;
+  --warning: #ffc107;
+  --warning-foreground: #2b2b2b;
+  --info: #16a2b7;
+  --info-foreground: #ffffff;
+  --chart-1: #8c1d18;
+  --chart-2: #c4471c;
+  --chart-3: #d97b48;
+  --chart-4: #5a0f0c;
+  --chart-5: #d8a55b;
+  --sidebar: #fff7ef;
+  --sidebar-foreground: #2e1c17;
+  --sidebar-primary: #8c1d18;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #c4471c;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #dcc8b5;
+  --sidebar-ring: #8c1d18;
+  --surface: linear-gradient(180deg, rgba(255, 250, 245, 0.96) 0%, rgba(250, 239, 229, 0.92) 100%);
+  --surface-strong: rgba(255, 246, 237, 0.92);
+  --surface-soft: rgba(255, 255, 255, 0.66);
+  --theme-ornament: rgba(142, 31, 19, 0.09);
+  --theme-highlight: rgba(196, 71, 28, 0.12);
+  --shadow-soft: 0 20px 50px rgba(84, 33, 19, 0.08);
+  --shadow-strong: 0 24px 64px rgba(84, 33, 19, 0.16);
+  --header-gradient: linear-gradient(135deg, rgba(255, 246, 237, 0.88) 0%, rgba(244, 228, 214, 0.72) 100%);
+  --header-surface: linear-gradient(180deg, rgba(245, 233, 220, 0.97) 0%, rgba(240, 223, 207, 0.96) 100%);
+  --dock-gradient: linear-gradient(180deg, rgba(255, 249, 242, 0.94) 0%, rgba(248, 237, 227, 0.88) 100%);
+  --hero-start: rgba(255, 239, 224, 0.95);
+  --hero-end: rgba(243, 215, 186, 0.78);
+  --font-display: var(--font-display-serif);
+  --font-body: var(--font-body-sans);
+  --title-spacing: 0.06em;
 }
 
-
-/* 傣味主题 - 云南清爽绿 */
-/* 关键词：清新、野菜、薄荷、雨林、解腻 */
 .yunnan {
-  --radius: 0.65rem;
-  /* 背景色：暖白底色 #F6FBF8 */
-  --background: #F6FBF8;
-  /* 前景色：深灰正文 #263332 */
+  --radius: 1.5rem;
+  --background: #f2f8f2;
   --foreground: #263332;
-  /* 卡片 */
-  --card: #F6FBF8;
+  --card: #f8fcf7;
   --card-foreground: #263332;
-  /* 弹出层 */
-  --popover: #FFFFFF;
+  --popover: #ffffff;
   --popover-foreground: #263332;
-  /* 主色：清爽绿 #2F8F6B */
-  --primary: #2F8F6B;
-  --primary-foreground: #FFFFFF;
-  /* 次要色：薄荷绿 #3FB28A */
-  --secondary: #3FB28A;
-  --secondary-foreground: #FFFFFF;
-  /* 柔和色：浅绿背景 #E8F5EF */
-  --muted: #E8F5EF;
-  /* 次级文字 #6C7F79 */
-  --muted-foreground: #6C7F79;
-  /* 强调色：深绿/森林绿 #1E5E46 */
-  --accent: #1E5E46;
-  --accent-foreground: #FFFFFF;
-  /* 危险色 #DC3545 */
-  --destructive: #DC3545;
-  /* 边框/分割线 - 更淡 */
-  --border: #E5F0EA;
-  --input: #E5F0EA;
-  /* 焦点环：主色 */
-  --ring: #2F8F6B;
-  /* 语义化颜色 */
-  --success: #2F8F6B;
-  --success-foreground: #FFFFFF;
-  --warning: #FFC107;
+  --primary: #2f8f6b;
+  --primary-foreground: #ffffff;
+  --secondary: #3fb28a;
+  --secondary-foreground: #ffffff;
+  --muted: #e3f0e7;
+  --muted-foreground: #6c7f79;
+  --accent: #1e5e46;
+  --accent-foreground: #ffffff;
+  --destructive: #dc3545;
+  --border: #cddfd4;
+  --input: #d9e9df;
+  --ring: #2f8f6b;
+  --success: #2f8f6b;
+  --success-foreground: #ffffff;
+  --warning: #ffc107;
   --warning-foreground: #263332;
-  --info: #16A2B7;
-  --info-foreground: #FFFFFF;
-  /* 图表颜色 - 傣味绿系 */
-  --chart-1: #2F8F6B; /* 主绿 */
-  --chart-2: #3FB28A; /* 薄荷绿 */
-  --chart-3: #5BC4A1; /* 亮绿 */
-  --chart-4: #1E5E46; /* 深绿 */
-  --chart-5: #FFC107; /* 点缀黄 */
-  /* 侧边栏 */
-  --sidebar: #F6FBF8;
+  --info: #16a2b7;
+  --info-foreground: #ffffff;
+  --chart-1: #2f8f6b;
+  --chart-2: #3fb28a;
+  --chart-3: #71c3a0;
+  --chart-4: #1e5e46;
+  --chart-5: #d7b14d;
+  --sidebar: #f6fbf6;
   --sidebar-foreground: #263332;
-  --sidebar-primary: #2F8F6B;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #3FB28A;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: #E5F0EA;
-  --sidebar-ring: #2F8F6B;
+  --sidebar-primary: #2f8f6b;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #3fb28a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #cddfd4;
+  --sidebar-ring: #2f8f6b;
+  --surface: linear-gradient(180deg, rgba(249, 253, 249, 0.96) 0%, rgba(236, 246, 238, 0.9) 100%);
+  --surface-strong: rgba(245, 251, 245, 0.92);
+  --surface-soft: rgba(255, 255, 255, 0.68);
+  --theme-ornament: rgba(47, 143, 107, 0.11);
+  --theme-highlight: rgba(77, 170, 122, 0.14);
+  --shadow-soft: 0 18px 48px rgba(27, 82, 61, 0.08);
+  --shadow-strong: 0 26px 72px rgba(27, 82, 61, 0.14);
+  --header-gradient: linear-gradient(135deg, rgba(245, 251, 246, 0.9) 0%, rgba(228, 241, 231, 0.78) 100%);
+  --header-surface: linear-gradient(180deg, rgba(229, 240, 233, 0.97) 0%, rgba(221, 235, 227, 0.96) 100%);
+  --dock-gradient: linear-gradient(180deg, rgba(247, 252, 247, 0.94) 0%, rgba(234, 245, 236, 0.88) 100%);
+  --hero-start: rgba(232, 244, 235, 0.96);
+  --hero-end: rgba(205, 233, 213, 0.78);
+  --font-display: var(--font-body-sans);
+  --font-body: var(--font-body-sans);
+  --title-spacing: 0.04em;
 }
 
-/* Tailwind CSS 主题集成 */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -172,54 +168,115 @@ html {
   --radius-sm: calc(var(--radius) - 4px);
 }
 
-/* 统一卡片样式 - 方便全局修改 */
 .card-base {
-  background-color: white;
-  border-radius: var(--radius);
+  background: var(--surface);
+  border-radius: calc(var(--radius) + 0.1rem);
   border: 1px solid var(--border);
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-}
-
-.dark .card-base {
-  background-color: #18181b; /* zinc-900 */
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
 }
 
 body {
-  /* 背景和前景色 */
-  background: var(--background);
+  background:
+    radial-gradient(circle at top left, var(--theme-highlight) 0%, transparent 28%),
+    radial-gradient(circle at 86% 8%, var(--theme-ornament) 0%, transparent 26%),
+    linear-gradient(180deg, var(--background) 0%, color-mix(in srgb, var(--background) 88%, white 12%) 100%);
   color: var(--foreground);
-
-  /* 移动端优化的系统字体栈（支持中文） */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
-    Arial, sans-serif;
-
-  /* 字体大小和行高 */
-  font-size: 1rem; /* 16px */
+  font-family: var(--font-body), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 1rem;
   line-height: 1.5;
-
-  /* 字体平滑（提升移动端显示效果） */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  /* 文字自动换行 */
   word-wrap: break-word;
   word-break: break-word;
-
-  /* 点击高亮取消（移动端） */
   -webkit-tap-highlight-color: transparent;
 }
 
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.22;
+  mask-image: radial-gradient(circle at center, black 38%, transparent 92%);
+}
 
-/* 瀑布流布局样式 (react-masonry-css) */
+h1,
+h2,
+h3,
+h4,
+.display-font {
+  font-family: var(--font-display), "PingFang SC", "Hiragino Sans GB", serif;
+  letter-spacing: var(--title-spacing);
+}
+
+.topbar-shell {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  height: calc(3.15rem + env(safe-area-inset-top, 0px));
+  padding: max(0.2rem, env(safe-area-inset-top, 0px)) 0.8rem 0.2rem;
+  background: var(--header-surface);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 88%, white 12%);
+  box-shadow: 0 10px 24px rgba(40, 24, 16, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.surface-chip {
+  border: 1px solid color-mix(in srgb, var(--border) 78%, white 22%);
+  background: var(--surface-soft);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.46);
+  backdrop-filter: blur(14px);
+}
+
+.floating-dock {
+  background: var(--dock-gradient);
+  border: 1px solid color-mix(in srgb, var(--border) 84%, white 16%);
+  border-radius: calc(var(--radius) + 0.1rem);
+  box-shadow: var(--shadow-strong);
+  backdrop-filter: blur(18px);
+}
+
+.themed-input,
+.themed-select,
+.themed-textarea {
+  width: 100%;
+  border-radius: calc(var(--radius) - 0.15rem);
+  border: 1px solid color-mix(in srgb, var(--border) 92%, white 8%);
+  background: var(--surface-strong);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36);
+}
+
+.themed-input:focus,
+.themed-select:focus,
+.themed-textarea:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--primary) 40%, white 60%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 0 0 4px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.settings-tile {
+  border: 1px solid color-mix(in srgb, var(--border) 88%, white 12%);
+  background: var(--surface-soft);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
 .masonry-grid {
   display: flex;
-  margin-left: -12px; /* gutter size offset */
+  margin-left: -12px;
   width: auto;
 }
 
 .masonry-grid-column {
-  padding-left: 12px; /* gutter size */
+  padding-left: 12px;
   background-clip: padding-box;
 }
 
@@ -227,7 +284,6 @@ body {
   margin-bottom: 12px;
 }
 
-/* 新上传照片高亮动画 */
 @keyframes highlight {
   0% {
     transform: scale(0.95);

@@ -20,6 +20,7 @@ export const routing = defineRouting({
     '/menu': '/menu',
     '/photo': '/photo',
     '/profile': '/profile',
+    '/profile/edit-profile': '/profile/edit-profile',
     '/profile/change-password': '/profile/change-password',
     '/sign-in': '/sign-in',
     '/sign-up': '/sign-up',

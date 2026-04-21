@@ -162,6 +162,9 @@
     "clear": "清空",
     "submit": "提交订单",
     "submitting": "提交中...",
+    "submitSuccess": "订单提交成功，订单号：{orderNumber}",
+    "submitError": "下单失败，请重试",
+    "loginRequired": "请先登录后下单",
     "added": "已加入购物车",
     "item": "件商品"
   },

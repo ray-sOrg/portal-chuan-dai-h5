@@ -20,8 +20,6 @@ export function LanguageToggle() {
     { code: 'zh', name: '中文', flag: '🇨🇳' }
   ];
 
-  const currentLanguage = languages.find(lang => lang.code === locale);
-
   const handleLanguageChange = (newLocale: string) => {
     const supportedLocale = newLocale as SupportedLocale;
 
@@ -30,7 +28,7 @@ export function LanguageToggle() {
     updateLastUsedLocale(supportedLocale);
 
     // 路由跳转
-    router.replace(pathname as any, { locale: newLocale });
+    router.replace(pathname, { locale: supportedLocale });
     setIsOpen(false);
   };
 
@@ -39,16 +37,15 @@ export function LanguageToggle() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'flex items-center gap-2 px-3 py-2 rounded-lg transition-colors',
-          'text-sm font-medium',
-          'hover:bg-primary/5 hover:text-primary',
+          'surface-chip flex h-8 items-center gap-1.5 rounded-full px-2.5 transition-colors',
+          'text-xs font-semibold',
+          'hover:text-primary',
           'focus:outline-none focus:ring-2 focus:ring-primary/20'
         )}
         aria-label={t('language')}
       >
-        <Languages className="w-4 h-4" />
-        <span className="hidden sm:inline">{currentLanguage?.flag}</span>
-        <span className="text-xs uppercase font-semibold">{locale}</span>
+        <Languages className="h-3.5 w-3.5" />
+        <span className="uppercase">{locale}</span>
       </button>
 
       {isOpen && (
@@ -60,7 +57,7 @@ export function LanguageToggle() {
           />
 
           {/* Dropdown */}
-          <div className="card-base absolute right-0 top-full mt-2 z-[101] min-w-[140px] overflow-hidden">
+          <div className="card-base absolute right-0 top-full mt-2 z-[101] min-w-[148px] overflow-hidden">
             {languages.map((language) => (
               <button
                 key={language.code}

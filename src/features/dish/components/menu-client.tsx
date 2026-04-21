@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
-import { Search, Plus } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { Search, Plus, Flame, Leaf, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { CartFloating } from '@/features/cart/components/cart-floating';
 import { DishModal } from '@/features/dish/components/dish-modal';
@@ -17,6 +17,7 @@ interface MenuClientProps {
 
 export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps) {
   const t = useTranslations();
+  const locale = useLocale();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<DishCategory>(DISH_CATEGORIES[0].id);
@@ -24,6 +25,17 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [dishes] = useState<Dish[]>(initialDishes);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const copy = locale === 'zh'
+    ? {
+        hot: '热辣',
+        fresh: '清鲜',
+        dishes: '道菜',
+      }
+    : {
+        hot: 'Hot',
+        fresh: 'Fresh',
+        dishes: 'dishes',
+      };
 
   // 是否正在通过点击左侧导航触发滚动（期间不响应滚动事件反向同步）
   const isClickScrollingRef = useRef(false);
@@ -60,7 +72,6 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
     });
     return map;
   }, [filteredDishes]);
-
   // 左侧导航：将激活分类滚动到可见中央
   const scrollLeftNavToActive = useCallback((category: DishCategory) => {
     const btn = categoryBtnRefs.current.get(category);
@@ -171,7 +182,7 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
       try {
         await new Promise(resolve => setTimeout(resolve, 1000));
         toast.success(t('menu.refreshed'));
-      } catch (error) {
+      } catch {
         toast.error(t('menu.refreshError'));
       } finally {
         setIsRefreshing(false);
@@ -215,129 +226,132 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
   }
 
   return (
-    // 菜单组件在 main(pt-12, pb-[calc(3.5rem+1rem)]) 内
-    // 组件占满 main 内容区，用负 margin 消除外层多余 padding
     <div
-      className="flex flex-col bg-background text-foreground overflow-hidden -mb-[calc(3.5rem+1rem)]"
-      style={{ height: 'calc(100dvh - 3rem)' }}
+      className="flex flex-col overflow-hidden bg-background text-foreground"
+      style={{ height: 'calc(100dvh - 5.5rem)' }}
     >
-      {/* 搜索栏 */}
-      <div className="flex-none px-4 py-3 bg-background">
+      <div className="flex-none px-4 pb-3">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder="搜索菜品"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-9 pl-9 pr-4 rounded-full bg-white border border-border text-sm focus:outline-none focus:border-primary"
+            className="themed-input h-10 pl-11 pr-4 text-sm"
           />
         </div>
       </div>
 
-      {/* 左右联动内容区 — flex-1 + min-h-0 确保不撑开父容器 */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-
-        {/* 左侧分类导航 */}
+      <div className="flex flex-1 min-h-0 overflow-hidden px-4 pb-2">
         <aside
           ref={leftNavRef}
-          className="w-[72px] flex-none bg-background overflow-y-auto"
+          className="mr-2 w-[74px] flex-none overflow-y-auto"
           style={{ scrollbarWidth: 'none' }}
         >
+          <div className="space-y-1.5 pb-4">
           {DISH_CATEGORIES.map((category) => {
             const isActive = activeCategory === category.id;
+            const categoryTheme = getCategoryTheme(category.id);
+            const Icon = categoryTheme === 'sichuan' ? Flame : Leaf;
+
             return (
               <button
                 key={category.id}
                 ref={(el) => { if (el) categoryBtnRefs.current.set(category.id, el); }}
                 onClick={() => handleCategoryClick(category.id)}
-                className={`w-full min-h-[56px] px-1 flex flex-col items-center justify-center text-center gap-0.5 transition-colors border-l-[3px] ${
+                className={`w-full rounded-[1rem] border px-1.5 py-2.5 text-center transition-all duration-200 ${
                   isActive
-                    ? 'bg-white border-primary text-primary'
-                    : 'border-transparent text-muted-foreground'
+                    ? 'border-primary bg-primary text-primary-foreground shadow-[var(--shadow-soft)]'
+                    : 'surface-chip text-muted-foreground hover:-translate-y-0.5 hover:text-primary'
                 }`}
               >
-                <span className={`text-xs leading-tight font-medium ${isActive ? 'font-semibold' : ''}`}>
+                <div className="mb-1 flex justify-center">
+                  <Icon className={`h-3.5 w-3.5 ${isActive ? 'text-primary-foreground' : 'text-primary'}`} />
+                </div>
+                <span className={`text-[11px] leading-tight font-medium ${isActive ? 'font-semibold text-primary-foreground' : ''}`}>
                   {t(category.labelKey)}
                 </span>
               </button>
             );
           })}
+          </div>
         </aside>
 
-        {/* 右侧菜品列表 */}
         <main
           ref={rightListRef}
-          className="flex-1 overflow-y-auto bg-background"
+          className="flex-1 overflow-y-auto"
           style={{ scrollbarWidth: 'none' }}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          {/* 下拉刷新指示器 */}
           {(pullY > 0 || isRefreshing) && (
             <div 
-              className="sticky top-0 left-0 right-0 flex items-center justify-center py-3 bg-primary/10 z-10"
+              className="sticky top-0 left-0 right-0 z-10 flex items-center justify-center py-3"
             >
-              <div className="text-sm text-primary font-medium">
+              <div className="surface-chip rounded-full px-4 py-2 text-sm font-medium text-primary">
                 {isRefreshing ? '刷新中...' : pullY > 60 ? '松开刷新' : '下拉刷新'}
               </div>
             </div>
           )}
+
           {DISH_CATEGORIES.map((category) => {
             const categoryDishes = dishesByCategory.get(category.id) || [];
             if (categoryDishes.length === 0 && searchQuery) return null;
+
+            const categoryTheme = getCategoryTheme(category.id);
+            const AccentIcon = categoryTheme === 'sichuan' ? Flame : Leaf;
 
             return (
               <div
                 key={category.id}
                 data-category={category.id}
                 ref={(el) => { if (el) categoryRefs.current.set(category.id, el); }}
+                className="mb-4"
               >
-                {/* 分类标题行 */}
-                <div className="px-3 py-2 bg-background">
-                  <h2 className="text-sm font-semibold text-foreground">
-                    {t(category.labelKey)}
-                  </h2>
+                <div className="mb-2 flex items-center justify-between px-1">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <AccentIcon className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <h2 className="text-sm font-semibold text-foreground">
+                        {t(category.labelKey)}
+                      </h2>
+                      <p className="text-[11px] text-muted-foreground">{categoryDishes.length} {copy.dishes}</p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* 菜品网格 */}
                 {categoryDishes.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-2 p-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {categoryDishes.map((dish) => {
                       const isFavorite = favorites.has(dish.id);
                       return (
                         <div
                           key={dish.id}
-                          className="bg-white rounded-xl overflow-hidden shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
+                          className="card-base cursor-pointer overflow-hidden rounded-[calc(var(--radius)-0.05rem)] p-0 active:scale-[0.985] transition-transform"
                           onClick={() => handleOpenDish(dish)}
                         >
-                          {/* 图片 */}
-                          <div className="aspect-square bg-muted relative">
+                          <div className="relative aspect-[0.92] overflow-hidden bg-[linear-gradient(145deg,var(--hero-start),var(--hero-end))]">
                             <img
                               src={dish.image || ''}
                               alt={dish.name}
-                              className="w-full h-full object-cover"
+                              className="h-full w-full object-cover"
                               onError={(e) => {
                                 const target = e.currentTarget;
                                 target.style.display = 'none';
                                 target.nextElementSibling?.classList.remove('hidden');
                               }}
                             />
-                            {/* 默认占位图 */}
-                            <div className={`w-full h-full flex flex-col items-center justify-center absolute inset-0 ${dish.image ? 'hidden' : ''}`}>
-                              <svg className="w-12 h-12 text-primary/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" />
-                                <path d="M15 11c0-1.66-1.34-3-3-3s-3 1.34-3 3" />
-                                <path d="M9 16h6" />
-                                <circle cx="8.5" cy="8.5" r="0.8" fill="currentColor" />
-                                <circle cx="15.5" cy="8.5" r="0.8" fill="currentColor" />
-                              </svg>
-                              <span className="text-[11px] text-primary/40 mt-1">暂无图片</span>
+                            <div className={`absolute inset-0 flex h-full w-full flex-col items-center justify-center ${dish.image ? 'hidden' : ''}`}>
+                              <Sparkles className="h-10 w-10 text-primary/35" />
+                              <span className="mt-2 text-[11px] text-primary/50">暂无图片</span>
                             </div>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleToggleFavorite(dish.id); }}
-                              className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center bg-white/80"
+                              className="surface-chip absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full"
                             >
                               <span className={isFavorite ? 'text-red-500' : 'text-gray-400'} style={{ fontSize: 13 }}>
                                 {isFavorite ? '❤️' : '🤍'}
@@ -345,23 +359,27 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
                             </button>
                           </div>
 
-                          {/* 信息 */}
-                          <div className="p-2">
-                            <h3 className="font-medium text-xs text-foreground truncate">
-                              {dish.name}
-                            </h3>
-                            <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                          <div className="p-3">
+                            <div className="mb-2 flex items-start justify-between gap-2">
+                              <h3 className="line-clamp-1 text-sm font-semibold text-foreground">
+                                {dish.name}
+                              </h3>
+                              <span className="rounded-full bg-primary/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+                                {categoryTheme === 'sichuan' ? copy.hot : copy.fresh}
+                              </span>
+                            </div>
+                            <p className="line-clamp-2 min-h-[2.5rem] text-[11px] leading-5 text-muted-foreground">
                               {dish.description || dish.nameEn || ''}
                             </p>
-                            <div className="flex items-center justify-between mt-1.5">
+                            <div className="mt-3 flex items-center justify-between">
                               <span className="text-[11px] text-muted-foreground">
                                 {dish.isSpicy ? '🌶️ 辣' : ''}{dish.isVegetarian ? ' 🥬 素' : ''}
                               </span>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleOpenDish(dish); }}
-                                className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center"
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[var(--shadow-soft)]"
                               >
-                                <Plus className="w-3.5 h-3.5" />
+                                <Plus className="h-4 w-4" />
                               </button>
                             </div>
                           </div>
@@ -370,12 +388,11 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
                     })}
                   </div>
                 ) : (
-                  <div className="px-3 py-6 text-center text-gray-400 text-sm">暂无菜品</div>
+                  <div className="px-3 py-6 text-center text-sm text-gray-400">暂无菜品</div>
                 )}
               </div>
             );
           })}
-          {/* 底部留白 — 确保最后一个分类也能滚动到顶部 */}
           <div style={{ minHeight: 'calc(100% - 120px)' }} />
         </main>
       </div>

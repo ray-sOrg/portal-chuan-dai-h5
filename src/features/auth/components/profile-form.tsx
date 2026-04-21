@@ -17,9 +17,10 @@ type ProfileData = {
 
 type Props = {
     initialData: ProfileData;
+    onSuccess?: () => void;
 };
 
-export function ProfileForm({ initialData }: Props) {
+export function ProfileForm({ initialData, onSuccess }: Props) {
     const t = useTranslations("auth");
     const [actionState, action] = useActionState(updateProfile, EMPTY_ACTION_STATE);
 
@@ -28,6 +29,7 @@ export function ProfileForm({ initialData }: Props) {
             action={action}
             actionState={actionState}
             className="flex flex-col gap-y-4"
+            onSuccess={onSuccess ? () => onSuccess() : undefined}
         >
             <div>
                 <label className="block text-sm font-medium mb-1">{t("nickname")}</label>
@@ -37,7 +39,7 @@ export function ProfileForm({ initialData }: Props) {
                     maxLength={20}
                     placeholder={t("nicknamePlaceholder")}
                     defaultValue={initialData.nickname || ""}
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="themed-input h-11 px-4 text-sm"
                 />
                 <FieldError name="nickname" actionState={actionState} />
             </div>
@@ -47,7 +49,7 @@ export function ProfileForm({ initialData }: Props) {
                 <select
                     name="gender"
                     defaultValue={initialData.gender || ""}
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="themed-select h-11 px-4 text-sm"
                 >
                     <option value="">--</option>
                     <option value="MALE">{t("male")}</option>
@@ -67,7 +69,7 @@ export function ProfileForm({ initialData }: Props) {
                             ? new Date(initialData.birthday).toISOString().split("T")[0]
                             : ""
                     }
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="themed-input h-11 px-4 text-sm"
                 />
                 <FieldError name="birthday" actionState={actionState} />
             </div>
@@ -80,7 +82,7 @@ export function ProfileForm({ initialData }: Props) {
                     rows={3}
                     placeholder={t("bioPlaceholder")}
                     defaultValue={initialData.bio || ""}
-                    className="w-full px-3 py-2 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                    className="themed-textarea resize-none px-4 py-3 text-sm"
                 />
                 <FieldError name="bio" actionState={actionState} />
             </div>

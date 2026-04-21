@@ -1,20 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ShoppingCart, X, Plus, Minus, Trash2 } from 'lucide-react';
 import { useCartStore } from '@/features/cart/store';
 import { toast } from 'sonner';
 import { createOrder } from '@/features/order/actions/order-actions';
+import { useRouter } from '@/i18n/routing';
+import { ordersPath, signInPath } from '@/paths';
 
 export function CartFloating() {
-  const t = useTranslations();
+  const t = useTranslations('cart');
+  const locale = useLocale();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { items, removeItem, updateQuantity, getTotal, clearCart, getItemCount } = useCartStore();
   const itemCount = getItemCount();
   const total = getTotal();
+  const moneyFormatter = new Intl.NumberFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
+    style: 'currency',
+    currency: 'CNY',
+  });
 
   const handleSubmitOrder = async () => {
     if (items.length === 0) return;
@@ -31,16 +39,24 @@ export function CartFloating() {
       });
 
       if (result.success) {
-        toast.success(`订单提交成功！订单号：${result.orderNumber}`);
+        toast.success(t('submitSuccess', { orderNumber: result.orderNumber }));
         clearCart();
         setIsOpen(false);
-        // 跳转到订单页面
-        window.location.href = `/zh/orders`;
+        router.push({
+          pathname: '/orders/[id]',
+          params: { id: result.orderId },
+        });
+      } else if (result.redirectTo === signInPath) {
+        toast.error(t('loginRequired'));
+        router.push({
+          pathname: signInPath,
+          query: { redirect: ordersPath },
+        });
       } else {
-        toast.error(result.message || '下单失败');
+        toast.error(result.message || t('submitError'));
       }
-    } catch (error) {
-      toast.error('下单失败，请重试');
+    } catch {
+      toast.error(t('submitError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -77,7 +93,7 @@ export function CartFloating() {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">
-                {t('cart.title')} ({itemCount})
+                {t('title')} ({itemCount})
               </h2>
               <button
                 onClick={() => setIsOpen(false)}
@@ -91,7 +107,7 @@ export function CartFloating() {
             <div className="flex-1 overflow-y-auto p-4">
               {items.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
-                  {t('cart.empty')}
+                  {t('empty')}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -108,6 +124,10 @@ export function CartFloating() {
                             备注: {item.remark}
                           </p>
                         )}
+                      </div>
+
+                      <div className="min-w-[72px] text-right text-sm font-medium">
+                        {moneyFormatter.format(item.dish.price * item.quantity)}
                       </div>
 
                       {/* 数量控制 */}
@@ -143,9 +163,14 @@ export function CartFloating() {
             {/* Footer */}
             <div className="border-t p-4 space-y-4">
               {/* 数量统计 */}
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">{t('cart.total')}</span>
-                <span className="text-xl font-bold">{itemCount} 份</span>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm text-muted-foreground">{t('total')}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {itemCount} {t('item')}
+                  </div>
+                </div>
+                <span className="text-xl font-bold">{moneyFormatter.format(total)}</span>
               </div>
 
               {/* 按钮 */}
@@ -154,14 +179,14 @@ export function CartFloating() {
                   onClick={clearCart}
                   className="px-4 py-2 rounded-lg border hover:bg-muted transition-colors"
                 >
-                  {t('cart.clear')}
+                  {t('clear')}
                 </button>
                 <button
                   onClick={handleSubmitOrder}
                   disabled={isSubmitting || items.length === 0}
                   className="flex-1 bg-primary text-primary-foreground rounded-lg py-2 font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
-                  {isSubmitting ? t('cart.submitting') : t('cart.submit')}
+                  {isSubmitting ? t('submitting') : t('submit')}
                 </button>
               </div>
             </div>

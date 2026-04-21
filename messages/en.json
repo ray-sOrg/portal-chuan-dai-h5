@@ -162,6 +162,9 @@
     "clear": "Clear",
     "submit": "Submit Order",
     "submitting": "Submitting...",
+    "submitSuccess": "Order submitted successfully. Order #: {orderNumber}",
+    "submitError": "Failed to place the order. Please try again.",
+    "loginRequired": "Please sign in before placing an order.",
     "added": "Added to cart",
     "item": "items"
   },

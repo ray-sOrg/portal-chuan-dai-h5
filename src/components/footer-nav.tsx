@@ -7,11 +7,13 @@ import { Home, Menu, Camera, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigation, type TabType } from '@/stores/navigation';
 
+type NavPath = '/home' | '/menu' | '/photo' | '/profile';
+
 interface NavItem {
   id: TabType;
   labelKey: string;
   icon: React.ComponentType<{ className?: string }>;
-  path: string;
+  path: NavPath;
 }
 
 const navItems: NavItem[] = [
@@ -59,13 +61,14 @@ export function FooterNav() {
     const targetItem = navItems.find(item => item.id === tab);
     if (targetItem) {
       setActiveTab(tab);
-      router.push(targetItem.path as any);
+      router.push(targetItem.path);
     }
   };
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50">
-      <div className="flex items-center justify-around py-2 px-4 max-w-md mx-auto">
+    <footer className="fixed inset-x-0 bottom-0 z-50 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))]">
+      <div className="mx-auto max-w-md">
+        <div className="floating-dock flex items-center justify-between px-2 py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -75,22 +78,31 @@ export function FooterNav() {
               key={item.id}
               onClick={() => handleTabClick(item.id)}
               className={cn(
-                'flex items-center justify-center p-3 rounded-lg transition-colors',
+                'flex min-w-[4.2rem] flex-col items-center justify-center rounded-xl px-3 py-2 transition-all duration-200',
                 isActive
-                  ? 'text-primary bg-primary/10'
-                  : 'text-muted-foreground hover:text-primary hover:bg-primary/5'
+                  ? 'bg-primary text-primary-foreground shadow-[0_10px_25px_rgba(0,0,0,0.12)]'
+                  : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'
               )}
               aria-label={t(item.labelKey)}
             >
               <Icon
                 className={cn(
-                  'w-6 h-6',
-                  isActive ? 'text-primary' : 'text-muted-foreground'
+                  'h-5 w-5',
+                  isActive ? 'text-primary-foreground' : 'text-current'
                 )}
               />
+              <span
+                className={cn(
+                  'mt-1 text-[11px] font-medium',
+                  isActive ? 'text-primary-foreground' : 'text-current'
+                )}
+              >
+                {t(item.labelKey)}
+              </span>
             </button>
           );
         })}
+        </div>
       </div>
     </footer>
   );
