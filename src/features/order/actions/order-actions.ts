@@ -1,9 +1,21 @@
 'use server';
 
+import { Prisma } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { getAuth } from '@/features/auth/queries/get-auth';
-import { redirect } from 'next/navigation';
+
+type CreateOrderResult =
+  | {
+      success: true;
+      orderId: string;
+      orderNumber: string;
+    }
+  | {
+      success: false;
+      message: string;
+      redirectTo?: '/sign-in';
+    };
 
 function generateOrderNumber(): string {
   const date = new Date();
@@ -19,7 +31,7 @@ export async function createOrder(data: {
   items: { dishId: string; quantity: number; remark?: string }[];
   remark?: string;
   customerName?: string;
-}) {
+}): Promise<CreateOrderResult> {
   const { user } = await getAuth();
 
   if (!user) {
@@ -62,12 +74,11 @@ export async function createOrder(data: {
   }
 
   // 创建订单（简化版，无需聚会）
-  const userAny = user as any;
   const order = await prisma.order.create({
     data: {
       orderNumber: generateOrderNumber(),
       customerId: user.id,
-      customerName: data.customerName || userAny.nickname || userAny.account || 'Guest',
+      customerName: data.customerName || user.nickname || user.phone || 'Guest',
       totalAmount,
       remark: data.remark,
       items: {
@@ -108,12 +119,12 @@ export async function getOrders(options?: {
 
   // 如果是主人，查自己发布的聚会的订单
   // 如果是客户，查自己的订单
-  const where: any = {
+  const where: Prisma.OrderWhereInput = {
     customerId: user.id,
   };
 
   if (options?.status) {
-    where.status = options.status;
+    where.status = options.status as Prisma.OrderWhereInput['status'];
   }
 
   const orders = await prisma.order.findMany({
@@ -157,7 +168,7 @@ export async function getOrderById(orderId: string) {
  */
 export async function updateOrderStatus(
   orderId: string,
-  status: 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+  status: 'CONFIRMED' | 'COMPLEED' | 'CANCELLED'
 ) {
   const { user } = await getAuth();
 
@@ -178,7 +189,7 @@ export async function updateOrderStatus(
     return { success: false, message: '只有订单主人可以操作' };
   }
 
-  const updateData: any = { status };
+  const updateData: Prisma.OrderUpdateInput = { status };
   
   if (status === 'CONFIRMED') {
     updateData.confirmedAt = new Date();

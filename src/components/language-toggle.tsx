@@ -1,17 +1,15 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter, usePathname } from '@/i18n/routing';
 import { Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { routing } from '@/i18n/routing';
 import { useLanguage, type SupportedLocale } from '@/stores/language';
 
 export function LanguageToggle() {
   const t = useTranslations('common');
   const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const { setPreferredLocale, updateLastUsedLocale } = useLanguage();
 
@@ -27,8 +25,19 @@ export function LanguageToggle() {
     setPreferredLocale(supportedLocale);
     updateLastUsedLocale(supportedLocale);
 
-    // 路由跳转
-    router.replace(pathname, { locale: supportedLocale });
+    // 直接替换 URL 中的 locale 前缀，避免动态路由的类型约束影响构建
+    const url = new URL(window.location.href);
+    const segments = url.pathname.split('/');
+    const currentLocale = segments[1];
+
+    if (routing.locales.includes(currentLocale as 'en' | 'zh')) {
+      segments[1] = supportedLocale;
+    } else {
+      segments.splice(1, 0, supportedLocale);
+    }
+
+    url.pathname = segments.join('/') || `/${supportedLocale}`;
+    window.location.assign(url.toString());
     setIsOpen(false);
   };
 

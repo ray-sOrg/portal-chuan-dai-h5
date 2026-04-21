@@ -1,9 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+
+interface OrderItem {
+  id: string;
+  price: number;
+  quantity: number;
+}
 
 interface Order {
   id: string;
@@ -13,7 +19,7 @@ interface Order {
   totalAmount: number;
   status: string;
   createdAt: Date;
-  items: any[];
+  items: OrderItem[];
 }
 
 interface OrdersPageClientProps {
@@ -32,7 +38,7 @@ export function OrdersPageClient({ locale, orders, pendingOrders }: OrdersPageCl
         return 'bg-yellow-100 text-yellow-800';
       case 'CONFIRMED':
         return 'bg-green-100 text-green-800';
-      case 'COMPLETED':
+      case 'COMPLEED':
         return 'bg-blue-100 text-blue-800';
       case 'CANCELLED':
         return 'bg-red-100 text-red-800';

@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { notFound, redirect } from 'next/navigation';
 import { getOrderById, updateOrderStatus } from '@/features/order/actions/order-actions';
 import { getAuth } from '@/features/auth/queries/get-auth';
@@ -7,6 +6,9 @@ import { ChevronLeft, Clock, CheckCircle, XCircle, User } from 'lucide-react';
 import { Locale } from 'next-intl';
 import Link from 'next/link';
 
+type OrderDetail = NonNullable<Awaited<ReturnType<typeof getOrderById>>>;
+type OrderItem = OrderDetail['items'][number];
+
 export default async function OrderDetailPage({
   params,
 }: {
@@ -14,7 +16,6 @@ export default async function OrderDetailPage({
 }) {
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: 'order' });
-  const tCommon = await getTranslations({ locale, namespace: 'common' });
   const { user } = await getAuth();
 
   if (!user) {
@@ -33,7 +34,7 @@ export default async function OrderDetailPage({
         return <Clock className="w-5 h-5 text-yellow-500" />;
       case 'CONFIRMED':
         return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'COMPLETED':
+      case 'COMPLEED':
         return <CheckCircle className="w-5 h-5 text-blue-500" />;
       case 'CANCELLED':
         return <XCircle className="w-5 h-5 text-red-500" />;
@@ -48,7 +49,7 @@ export default async function OrderDetailPage({
         return 'bg-yellow-100 text-yellow-800';
       case 'CONFIRMED':
         return 'bg-green-100 text-green-800';
-      case 'COMPLETED':
+      case 'COMPLEED':
         return 'bg-blue-100 text-blue-800';
       case 'CANCELLED':
         return 'bg-red-100 text-red-800';
@@ -98,7 +99,7 @@ export default async function OrderDetailPage({
             {t('items')} ({order.items.length})
           </div>
           <div className="divide-y">
-            {order.items.map((item: any) => (
+            {order.items.map((item: OrderItem) => (
               <div key={item.id} className="p-4 flex justify-between items-start">
                 <div className="flex-1">
                   <div className="font-medium">{item.dishName}</div>
@@ -166,11 +167,11 @@ export default async function OrderDetailPage({
 
         {order.status === 'CONFIRMED' && (
           <form
-            action={async () => {
-              'use server';
-              await updateOrderStatus(id, 'COMPLETED');
-            }}
-          >
+              action={async () => {
+                'use server';
+                await updateOrderStatus(id, 'COMPLEED');
+              }}
+            >
             <button
               type="submit"
               className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"

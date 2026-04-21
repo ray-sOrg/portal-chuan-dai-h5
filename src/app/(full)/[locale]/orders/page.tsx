@@ -1,20 +1,24 @@
+import { Prisma } from '@prisma/client';
 import { getOrders } from '@/features/order/actions/order-actions';
 import { Locale } from 'next-intl';
-import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { getAuth } from '@/features/auth/queries/get-auth';
 import { prisma } from '@/lib/prisma';
 import { OrdersPageClient } from './orders-client';
 
+type OrderWithItems = Prisma.OrderGetPayload<{
+  include: { items: true };
+}>;
+
 // 转换 Prisma Decimal 为普通数字
-function serializeOrder(order: any) {
+function serializeOrder(order: OrderWithItems) {
   return {
     ...order,
     totalAmount: order.totalAmount.toNumber(),
-    items: order.items?.map((item: any) => ({
+    items: order.items.map((item) => ({
       ...item,
       price: item.price.toNumber(),
-    })) || [],
+    })),
   };
 }
 
@@ -24,7 +28,6 @@ export default async function OrdersPage({
   params: Promise<{ locale: Locale }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'order' });
   const { user } = await getAuth();
 
   if (!user) {

@@ -40,7 +40,7 @@ export default async function Home() {
     { href: menuPath, label: t("common.menu"), icon: Sparkles },
     { href: ordersPath, label: t("home.quickLinks.myOrders"), icon: Receipt },
     { href: photoPath, label: t("common.photo"), icon: Camera },
-  ];
+  ] as const;
 
   const featuredDishes = [
     {

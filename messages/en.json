@@ -175,6 +175,7 @@
     "status": {
       "pending": "Pending",
       "confirmed": "Confirmed",
+      "compleed": "Completed",
       "completed": "Completed",
       "cancelled": "Cancelled"
     },
