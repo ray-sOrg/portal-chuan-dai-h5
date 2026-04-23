@@ -15,6 +15,8 @@ env:
   PROJECT_NAME: portal-chuan-dai-h5
   TCR_REGISTRY: ccr.ccs.tencentyun.com
   TCR_NAMESPACE: ray321
+  K8S_NAMESPACE: default
+  IMAGE_PULL_SECRET_NAME: tencent-tcr-secret
 
 jobs:
   build:
@@ -84,11 +86,18 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
           chmod 600 ~/.kube/config
+
+          kubectl create secret docker-registry "${{ env.IMAGE_PULL_SECRET_NAME }}" \
+            --namespace "${{ env.K8S_NAMESPACE }}" \
+            --docker-server="${{ env.TCR_REGISTRY }}" \
+            --docker-username="${{ secrets.TCR_USERNAME }}" \
+            --docker-password="${{ secrets.TCR_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
           
           sed -i "s|__IMAGE_NAME__|${{ steps.meta.outputs.image }}|g" deployment.yaml
           sed -i "s|__IMAGE_TAG__|${{ steps.meta.outputs.tag }}|g" deployment.yaml
           
-          kubectl apply -f deployment.yaml
-          kubectl rollout restart deployment/${{ env.PROJECT_NAME }}-deployment
-          kubectl rollout status deployment/${{ env.PROJECT_NAME }}-deployment --timeout=120s
+          kubectl apply -n "${{ env.K8S_NAMESPACE }}" -f deployment.yaml
+          kubectl rollout restart -n "${{ env.K8S_NAMESPACE }}" deployment/${{ env.PROJECT_NAME }}-deployment
+          kubectl rollout status -n "${{ env.K8S_NAMESPACE }}" deployment/${{ env.PROJECT_NAME }}-deployment --timeout=120s
           echo "✅ 部署完成"
