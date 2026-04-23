@@ -65,8 +65,11 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
           tags: ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}
+          # Tencent CCR + k3s/containerd can fail to pull OCI indexes with EOF.
+          outputs: type=image,push=true,oci-mediatypes=false
+          provenance: false
+          sbom: false
           build-args: |
             DATABASE_URL=${{ secrets.SUPABASE_POSTGRES_DATABASE_URL }}
             DIRECT_URL=${{ secrets.SUPABASE_POSTGRES_DIRECT_URL }}
