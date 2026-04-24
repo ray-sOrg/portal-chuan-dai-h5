@@ -291,6 +291,7 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
                 key={category.id}
                 ref={(el) => { if (el) categoryBtnRefs.current.set(category.id, el); }}
                 onClick={() => handleCategoryClick(category.id)}
+                aria-current={isActive ? 'page' : undefined}
                 className={`w-full rounded-[1rem] border px-1.5 py-2.5 text-center transition-all duration-200 ${
                   isActive
                     ? 'border-primary bg-primary text-primary-foreground shadow-[var(--shadow-soft)]'
