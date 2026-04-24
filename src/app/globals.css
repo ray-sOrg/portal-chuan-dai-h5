@@ -64,6 +64,10 @@ html {
   --dock-gradient: linear-gradient(180deg, rgba(255, 249, 242, 0.94) 0%, rgba(248, 237, 227, 0.88) 100%);
   --hero-start: rgba(255, 239, 224, 0.95);
   --hero-end: rgba(243, 215, 186, 0.78);
+  --ambient-line-angle: 115deg;
+  --ambient-pattern-angle: 105deg;
+  --ambient-accent: rgba(142, 31, 19, 0.13);
+  --ambient-green-accent: rgba(47, 143, 107, 0.08);
   --font-display: var(--font-display-serif);
   --font-body: var(--font-body-sans);
   --title-spacing: 0.06em;
@@ -120,6 +124,10 @@ html {
   --dock-gradient: linear-gradient(180deg, rgba(247, 252, 247, 0.94) 0%, rgba(234, 245, 236, 0.88) 100%);
   --hero-start: rgba(232, 244, 235, 0.96);
   --hero-end: rgba(205, 233, 213, 0.78);
+  --ambient-line-angle: 64deg;
+  --ambient-pattern-angle: 72deg;
+  --ambient-accent: rgba(47, 143, 107, 0.14);
+  --ambient-green-accent: rgba(215, 177, 77, 0.1);
   --font-display: var(--font-body-sans);
   --font-body: var(--font-body-sans);
   --title-spacing: 0.04em;
@@ -178,6 +186,8 @@ html {
 
 body {
   background:
+    linear-gradient(var(--ambient-line-angle), transparent 0 58%, color-mix(in srgb, var(--secondary) 9%, transparent) 58% 58.45%, transparent 58.45% 100%),
+    repeating-linear-gradient(var(--ambient-pattern-angle), transparent 0 18px, color-mix(in srgb, var(--border) 18%, transparent) 18px 19px),
     radial-gradient(circle at top left, var(--theme-highlight) 0%, transparent 28%),
     radial-gradient(circle at 86% 8%, var(--theme-ornament) 0%, transparent 26%),
     linear-gradient(180deg, var(--background) 0%, color-mix(in srgb, var(--background) 88%, white 12%) 100%);
@@ -198,11 +208,30 @@ body::before {
   inset: 0;
   pointer-events: none;
   background-image:
+    radial-gradient(ellipse at 18% 12%, color-mix(in srgb, var(--primary) 13%, transparent) 0 1px, transparent 1.5px),
+    radial-gradient(ellipse at 78% 22%, color-mix(in srgb, var(--secondary) 14%, transparent) 0 1px, transparent 1.5px),
     linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-  background-size: 28px 28px;
-  opacity: 0.22;
+  background-size: 92px 92px, 118px 118px, 28px 28px, 28px 28px;
+  opacity: 0.32;
   mask-image: radial-gradient(circle at center, black 38%, transparent 92%);
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: auto -8rem 6rem auto;
+  width: min(32rem, 82vw);
+  aspect-ratio: 1;
+  pointer-events: none;
+  background:
+    conic-gradient(from -18deg, transparent 0 12%, var(--ambient-accent) 12% 13%, transparent 13% 100%),
+    conic-gradient(from 38deg, transparent 0 10%, var(--ambient-green-accent) 10% 11%, transparent 11% 100%);
+  border-radius: 50%;
+  filter: blur(0.2px);
+  opacity: 0.54;
+  mask-image: radial-gradient(circle, black 0 46%, transparent 68%);
+  z-index: -1;
 }
 
 h1,
@@ -267,6 +296,91 @@ h4,
   border: 1px solid color-mix(in srgb, var(--border) 88%, white 12%);
   background: var(--surface-soft);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.hero-food-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0)),
+    linear-gradient(145deg, var(--hero-start), var(--hero-end));
+}
+
+.hero-food-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.55), transparent 48%),
+    repeating-linear-gradient(90deg, transparent 0 18px, rgba(255, 255, 255, 0.12) 18px 19px);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hero-theme-image {
+  opacity: 0;
+  transform: scale(1.025);
+  transition:
+    opacity 360ms ease,
+    transform 520ms ease;
+  z-index: 1;
+}
+
+.sichuan .hero-theme-image-sichuan,
+.yunnan .hero-theme-image-yunnan {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.yunnan .hero-food-panel::before {
+  background:
+    linear-gradient(90deg, rgba(247, 255, 246, 0.48), transparent 46%),
+    repeating-linear-gradient(72deg, transparent 0 20px, rgba(255, 255, 255, 0.14) 20px 21px);
+}
+
+.yunnan .hero-steam span {
+  border-color: color-mix(in srgb, var(--primary) 34%, transparent);
+  transform: rotate(10deg);
+}
+
+.yunnan .hero-steam span:nth-child(2) {
+  border-color: color-mix(in srgb, #d7b14d 38%, transparent);
+}
+
+.hero-image-scrim {
+  z-index: 3;
+}
+
+.hero-image-badge {
+  z-index: 4;
+}
+
+.hero-steam {
+  position: absolute;
+  left: 1.2rem;
+  top: 1.2rem;
+  display: grid;
+  gap: 0.42rem;
+  opacity: 0.56;
+  z-index: 3;
+}
+
+.hero-steam span {
+  display: block;
+  width: 3.7rem;
+  height: 0.72rem;
+  border-top: 1px solid color-mix(in srgb, var(--primary) 32%, transparent);
+  border-radius: 999px;
+  transform: rotate(-12deg);
+}
+
+.hero-steam span:nth-child(2) {
+  width: 2.4rem;
+  margin-left: 1.4rem;
+  border-color: color-mix(in srgb, #2f8f6b 34%, transparent);
+}
+
+.hero-steam span:nth-child(3) {
+  width: 3rem;
+  margin-left: 0.45rem;
 }
 
 .masonry-grid {
