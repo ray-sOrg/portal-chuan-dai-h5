@@ -37,8 +37,12 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
         dishes: 'dishes',
       };
 
-  // 是否正在通过点击左侧导航触发滚动（期间不响应滚动事件反向同步）
-  const isClickScrollingRef = useRef(false);
+  // 点击左侧分类时，右侧会产生一串 smooth-scroll 事件；滚动稳定前先锁住反向同步，避免高亮来回跳。
+  const programmaticScrollRef = useRef<{
+    category: DishCategory;
+    targetTop: number;
+    timeoutId: ReturnType<typeof setTimeout> | null;
+  } | null>(null);
 
   const leftNavRef = useRef<HTMLDivElement>(null);
   const rightListRef = useRef<HTMLDivElement>(null);
@@ -83,6 +87,14 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
     nav.scrollTo({ top: btnTop - navHeight / 2 + btnHeight / 2, behavior: 'smooth' });
   }, []);
 
+  const releaseProgrammaticScroll = useCallback(() => {
+    const lock = programmaticScrollRef.current;
+    if (lock?.timeoutId) {
+      clearTimeout(lock.timeoutId);
+    }
+    programmaticScrollRef.current = null;
+  }, []);
+
   // 右侧滚动 → 同步左侧高亮（scroll 事件）
   useEffect(() => {
     const container = rightListRef.current;
@@ -95,7 +107,14 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
       ticking = true;
       requestAnimationFrame(() => {
         ticking = false;
-        if (isClickScrollingRef.current) return;
+        const scrollLock = programmaticScrollRef.current;
+        if (scrollLock) {
+          if (Math.abs(container.scrollTop - scrollLock.targetTop) <= 2) {
+            setActiveCategory(scrollLock.category);
+            releaseProgrammaticScroll();
+          }
+          return;
+        }
 
         const containerTop = container.getBoundingClientRect().top;
 
@@ -129,7 +148,7 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
     handleScroll();
 
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [dishesByCategory, scrollLeftNavToActive]);
+  }, [dishesByCategory, releaseProgrammaticScroll, scrollLeftNavToActive]);
 
   // 收藏
   const handleToggleFavorite = useCallback(async (dishId: string) => {
@@ -194,22 +213,34 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
   // 点击左侧分类 → 右侧滚动到对应锚点
   const handleCategoryClick = useCallback((category: DishCategory) => {
     setActiveCategory(category);
-    scrollLeftNavToActive(category);
 
     const element = categoryRefs.current.get(category);
     const container = rightListRef.current;
     if (!element || !container) return;
 
-    isClickScrollingRef.current = true;
-    // 计算目标 scrollTop：分类 section 顶部相对于滚动容器
-    const targetTop = element.offsetTop - container.offsetTop;
-    container.scrollTo({ top: targetTop, behavior: 'smooth' });
+    releaseProgrammaticScroll();
 
-    // smooth scroll 大约 500ms，之后恢复响应
-    setTimeout(() => {
-      isClickScrollingRef.current = false;
-    }, 600);
-  }, [scrollLeftNavToActive]);
+    const containerRect = container.getBoundingClientRect();
+    const elementRect = element.getBoundingClientRect();
+    const maxTop = container.scrollHeight - container.clientHeight;
+    const targetTop = Math.max(
+      0,
+      Math.min(maxTop, container.scrollTop + elementRect.top - containerRect.top)
+    );
+
+    programmaticScrollRef.current = {
+      category,
+      targetTop,
+      timeoutId: setTimeout(() => {
+        setActiveCategory(category);
+        programmaticScrollRef.current = null;
+      }, 900),
+    };
+
+    container.scrollTo({ top: targetTop, behavior: 'smooth' });
+  }, [releaseProgrammaticScroll]);
+
+  useEffect(() => releaseProgrammaticScroll, [releaseProgrammaticScroll]);
 
   // 空状态
   if (dishes.length === 0) {
