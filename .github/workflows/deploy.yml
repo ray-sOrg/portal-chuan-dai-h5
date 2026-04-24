@@ -2,13 +2,16 @@ name: 🛠️ Build Docker Image
 
 # ========================================
 # 触发条件：
-# - main 分支推送 → latest 标签
-# - develop 分支推送 → develop 标签  
+# - Automated Tests 成功后，main 分支 → latest 标签
+# - Automated Tests 成功后，develop 分支 → develop 标签
 # - tag 推送 (v*) → 对应版本标签
 # ========================================
 on:
-  push:
+  workflow_run:
+    workflows: ["✅ Automated Tests"]
+    types: [completed]
     branches: [main, develop]
+  push:
     tags: ['v*']
 
 env:
@@ -22,10 +25,15 @@ jobs:
   build:
     name: 🛠️ Build & Push Docker Image
     runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'push' ||
+      github.event.workflow_run.conclusion == 'success'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -46,10 +54,10 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             # tag 推送: v1.0.0 → 1.0.0
             IMAGE_TAG=${GITHUB_REF#refs/tags/v}
-          elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
+          elif [[ "${{ github.event.workflow_run.head_branch || github.ref_name }}" == "main" ]]; then
             # main 分支 → latest
             IMAGE_TAG=latest
-          elif [[ "$GITHUB_REF" == refs/heads/develop ]]; then
+          elif [[ "${{ github.event.workflow_run.head_branch || github.ref_name }}" == "develop" ]]; then
             # develop 分支 → develop
             IMAGE_TAG=develop
           else
@@ -84,7 +92,7 @@ jobs:
 
       # 自动部署到 K8s（仅 main 分支）
       - name: Deploy to K8s
-        if: github.ref == 'refs/heads/main'
+        if: ${{ github.event.workflow_run.head_branch == 'main' || github.ref == 'refs/heads/main' }}
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
