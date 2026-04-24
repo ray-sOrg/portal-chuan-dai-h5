@@ -1,7 +1,6 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { routing } from '@/i18n/routing';
@@ -46,15 +45,14 @@ export function LanguageToggle() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'surface-chip flex h-8 items-center gap-1.5 rounded-full px-2.5 transition-colors',
-          'text-xs font-semibold',
-          'hover:text-primary',
+          'flex h-8 min-w-8 items-center justify-center rounded-full px-2',
+          'text-[11px] font-semibold uppercase text-muted-foreground transition-colors',
+          'hover:bg-primary/8 hover:text-primary',
           'focus:outline-none focus:ring-2 focus:ring-primary/20'
         )}
         aria-label={t('language')}
       >
-        <Languages className="h-3.5 w-3.5" />
-        <span className="uppercase">{locale}</span>
+        {locale}
       </button>
 
       {isOpen && (
