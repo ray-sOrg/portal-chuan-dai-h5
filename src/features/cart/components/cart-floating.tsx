@@ -70,6 +70,7 @@ export function CartFloating() {
       <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-24 right-4 z-50 bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-all"
+        aria-label={t('title')}
       >
         <div className="relative">
           <ShoppingCart className="w-6 h-6" />
@@ -135,6 +136,7 @@ export function CartFloating() {
                         <button
                           onClick={() => updateQuantity(item.dish.id, item.quantity - 1)}
                           className="w-8 h-8 rounded-full bg-background flex items-center justify-center hover:bg-muted"
+                          aria-label="减少数量"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
@@ -142,6 +144,7 @@ export function CartFloating() {
                         <button
                           onClick={() => updateQuantity(item.dish.id, item.quantity + 1)}
                           className="w-8 h-8 rounded-full bg-background flex items-center justify-center hover:bg-muted"
+                          aria-label="增加数量"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
@@ -151,6 +154,7 @@ export function CartFloating() {
                       <button
                         onClick={() => removeItem(item.dish.id)}
                         className="p-2 text-muted-foreground hover:text-destructive"
+                        aria-label="删除菜品"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
