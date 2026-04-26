@@ -99,7 +99,7 @@ export default async function LocaleLayout({
           <main
             className="flex-1 overflow-hidden"
             style={{
-              paddingTop: "calc(3.95rem + env(safe-area-inset-top, 0px))",
+              paddingTop: "calc(3.75rem + env(safe-area-inset-top, 0px))",
               paddingBottom: "calc(6.5rem + env(safe-area-inset-bottom, 0px))",
             }}
           >

@@ -32,7 +32,22 @@ export default function RootLayout({
     <html lang="zh" suppressHydrationWarning>
       <body className={`${bodySans.variable} ${displaySerif.variable}`}>
         {children}
-        <Toaster position="top-center" />
+        <Toaster
+          className="app-toaster"
+          position="top-center"
+          offset={{ top: "calc(3.65rem + env(safe-area-inset-top, 0px))" }}
+          mobileOffset={{ top: "calc(3.65rem + env(safe-area-inset-top, 0px))" }}
+          visibleToasts={1}
+          gap={8}
+          duration={1800}
+          toastOptions={{
+            classNames: {
+              toast: "app-toast",
+              title: "app-toast-title",
+              icon: "app-toast-icon",
+            },
+          }}
+        />
         <VersionInfo />
       </body>
     </html>

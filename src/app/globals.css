@@ -249,8 +249,8 @@ h4,
   left: 0;
   right: 0;
   z-index: 60;
-  height: calc(3.15rem + env(safe-area-inset-top, 0px));
-  padding: max(0.2rem, env(safe-area-inset-top, 0px)) 0.8rem 0.2rem;
+  height: calc(2.95rem + env(safe-area-inset-top, 0px));
+  padding: max(0.2rem, env(safe-area-inset-top, 0px)) 0.8rem 0;
   background: var(--header-surface);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 88%, white 12%);
   box-shadow: 0 10px 24px rgba(40, 24, 16, 0.06);
@@ -290,6 +290,34 @@ h4,
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     0 0 0 4px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.app-toaster {
+  --width: min(18rem, calc(100vw - 2rem));
+}
+
+.app-toaster [data-sonner-toast][data-styled="true"].app-toast {
+  min-height: 2.55rem;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  border-color: color-mix(in srgb, var(--primary) 24%, var(--border) 76%);
+  background: color-mix(in srgb, var(--surface-strong) 92%, white 8%);
+  color: var(--foreground);
+  box-shadow: 0 14px 34px rgba(39, 24, 16, 0.14);
+  backdrop-filter: blur(18px);
+}
+
+.app-toaster [data-sonner-toast][data-styled="true"].app-toast[data-type="success"] {
+  color: var(--primary);
+}
+
+.app-toast-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.app-toast-icon {
+  color: var(--primary);
 }
 
 .settings-tile {

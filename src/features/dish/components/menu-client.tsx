@@ -258,7 +258,7 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
 
   return (
     <div
-      className="-mt-2 flex flex-col overflow-hidden bg-background text-foreground"
+      className="-mt-[0.8rem] flex flex-col overflow-hidden bg-background pt-2 text-foreground"
       style={{ height: 'calc(100dvh - 5.5rem)' }}
     >
       <div className="flex-none px-4 pb-3">
