@@ -119,7 +119,7 @@ export default async function Home() {
               <span />
             </div>
             <Image
-              src="/brand/sichuan-hero.png"
+              src="/brand/sichuan-hero.webp"
               alt=""
               fill
               priority
@@ -127,7 +127,7 @@ export default async function Home() {
               className="hero-theme-image hero-theme-image-sichuan object-cover object-center"
             />
             <Image
-              src="/brand/dai-hero.png"
+              src="/brand/dai-hero.webp"
               alt=""
               fill
               priority
