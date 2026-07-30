@@ -7,7 +7,8 @@ COPY package.json bun.lock bunfig.toml ./
 COPY prisma ./prisma
 
 # 使用 bunfig.toml 中配置的镜像源安装依赖
-RUN bun install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile
 
 # =================== Step 2: Build project ==========================
 FROM oven/bun:1-debian AS builder
