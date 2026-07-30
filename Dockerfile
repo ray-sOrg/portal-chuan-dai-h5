@@ -3,10 +3,10 @@ FROM oven/bun:1-debian AS deps
 WORKDIR /app
 
 # 拷贝 package.json 和 bun.lock
-COPY package.json bun.lock ./
+COPY package.json bun.lock bunfig.toml ./
 COPY prisma ./prisma
 
-# 安装依赖 (GitHub Runner 网络好，直接用官方源)
+# 使用 bunfig.toml 中配置的镜像源安装依赖
 RUN bun install --frozen-lockfile
 
 # =================== Step 2: Build project ==========================
