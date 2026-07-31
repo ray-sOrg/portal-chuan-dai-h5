@@ -11,7 +11,7 @@
     "passwordPlaceholder": "Enter password",
     "confirmPasswordPlaceholder": "Confirm password",
     "accountRule": "3-16 characters, letters and numbers only",
-    "passwordRule": "3-16 characters",
+    "passwordRule": "6-64 characters with letters and numbers",
     "forgotPassword": "Forgot Password",
     "contactAdmin": "Please contact admin to reset password",
     "changePassword": "Change Password",

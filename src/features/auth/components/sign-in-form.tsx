@@ -30,6 +30,8 @@ export function SignInForm({ redirectTo = profilePath }: SignInFormProps) {
                 <input
                     name="account"
                     type="text"
+                    autoComplete="username"
+                    maxLength={16}
                     placeholder={t("accountPlaceholder")}
                     defaultValue={actionState.payload?.get("account") as string}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -41,8 +43,9 @@ export function SignInForm({ redirectTo = profilePath }: SignInFormProps) {
                 <input
                     name="password"
                     type="password"
+                    autoComplete="current-password"
+                    maxLength={128}
                     placeholder={t("passwordPlaceholder")}
-                    defaultValue={actionState.payload?.get("password") as string}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <FieldError name="password" actionState={actionState} />

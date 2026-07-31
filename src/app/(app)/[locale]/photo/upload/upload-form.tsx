@@ -4,10 +4,18 @@ import { useState, useTransition, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { Camera, X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { uploadPhoto } from '@/features/photo/actions';
+import { uploadPhotos } from '@/features/photo/actions';
 
 // 情绪标签类型
 type EmotionTag = 'HAPPY' | 'EXCITED' | 'WARM' | 'NOSTALGIC' | 'FUNNY';
+
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set([
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+]);
 
 // 情绪标签选项
 const emotionTags: { value: EmotionTag; label: string; emoji: string }[] = [
@@ -47,25 +55,40 @@ function getImageDimensions(file: File): Promise<{ width: number; height: number
     });
 }
 
-// 将 File 转为 base64
-function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
 // 生成唯一 ID
 function generateId(): string {
     return Math.random().toString(36).substring(2, 10);
+}
+
+function requestUploadCleanup(urls: string[], useBeacon = false) {
+    const uniqueUrls = Array.from(new Set(urls));
+    if (uniqueUrls.length === 0) return;
+
+    const body = JSON.stringify({ urls: uniqueUrls });
+    if (useBeacon && navigator.sendBeacon) {
+        navigator.sendBeacon(
+            '/api/photos/cleanup-uploads',
+            new Blob([body], { type: 'application/json' })
+        );
+        return;
+    }
+
+    void fetch('/api/photos/cleanup-uploads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        keepalive: true,
+    }).catch(() => undefined);
 }
 
 export function UploadForm() {
     const router = useRouter();
     const locale = useLocale();
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const imagesRef = useRef<ImageItem[]>([]);
+    const removedImageIdsRef = useRef(new Set<string>());
+    const publishedRef = useRef(false);
+    const cleanupRequestedUrlsRef = useRef(new Set<string>());
     const [isPending, startTransition] = useTransition();
 
     // 表单状态
@@ -75,16 +98,35 @@ export function UploadForm() {
     const [emotionTag, setEmotionTag] = useState<EmotionTag | ''>('');
     const [error, setError] = useState('');
 
-    // 组件卸载时清理所有 preview URL，防止内存泄漏
     useEffect(() => {
-        return () => {
-            images.forEach((img) => {
-                if (img.preview) {
-                    URL.revokeObjectURL(img.preview);
-                }
-            });
+        imagesRef.current = images;
+    }, [images]);
+
+    // 离开未发布页面时回收预览 URL 和已上传的临时对象
+    useEffect(() => {
+        const cleanup = (useBeacon: boolean) => {
+            const currentImages = imagesRef.current;
+            currentImages.forEach((image) => URL.revokeObjectURL(image.preview));
+
+            if (publishedRef.current) return;
+            const urls = currentImages
+                .map((image) => image.url)
+                .filter((url): url is string => Boolean(url))
+                .filter((url) => {
+                    if (cleanupRequestedUrlsRef.current.has(url)) return false;
+                    cleanupRequestedUrlsRef.current.add(url);
+                    return true;
+                });
+            requestUploadCleanup(urls, useBeacon);
         };
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+        const handlePageHide = () => cleanup(true);
+        window.addEventListener('pagehide', handlePageHide);
+
+        return () => {
+            window.removeEventListener('pagehide', handlePageHide);
+            cleanup(false);
+        };
+    }, []);
 
     // 上传单张图片到 COS（通过 API Route）
     const uploadSingleImage = async (item: ImageItem) => {
@@ -118,12 +160,11 @@ export function UploadForm() {
                 );
             }, baseInterval);
 
-            // 转为 base64 并调用 API
-            const base64Data = await fileToBase64(item.file);
+            // 直接发送图片二进制，避免 Base64 体积膨胀
             const response = await fetch('/api/photos/upload-image', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ base64Data }),
+                headers: { 'Content-Type': item.file.type },
+                body: item.file,
             });
 
             const result = await response.json();
@@ -135,16 +176,28 @@ export function UploadForm() {
             }
 
             if (result.success && result.url) {
+                if (removedImageIdsRef.current.has(item.id)) {
+                    cleanupRequestedUrlsRef.current.add(result.url);
+                    requestUploadCleanup([result.url]);
+                    return;
+                }
                 setImages((prev) =>
                     prev.map((img) =>
                         img.id === item.id ? { ...img, status: 'success' as UploadStatus, progress: 100, url: result.url } : img
                     )
                 );
             } else {
+                const uploadError =
+                    result.error === 'UPLOAD_LIMIT_EXCEEDED'
+                        ? '上传次数已达上限，请稍后再试'
+                        : result.error || '上传失败';
+                if (result.error === 'UPLOAD_LIMIT_EXCEEDED') {
+                    setError(uploadError);
+                }
                 setImages((prev) =>
                     prev.map((img) =>
                         img.id === item.id
-                            ? { ...img, status: 'error' as UploadStatus, progress: 0, error: result.error || '上传失败' }
+                            ? { ...img, status: 'error' as UploadStatus, progress: 0, error: uploadError }
                             : img
                     )
                 );
@@ -168,10 +221,19 @@ export function UploadForm() {
         if (files.length === 0) return;
 
         // 限制最多 9 张
-        const newFiles = files.slice(0, 9 - images.length);
+        const selectedFiles = files.slice(0, 9 - images.length);
+        const newFiles = selectedFiles.filter(
+            (file) =>
+                ALLOWED_IMAGE_TYPES.has(file.type) &&
+                file.size > 0 &&
+                file.size <= MAX_IMAGE_BYTES
+        );
+        setError(
+            newFiles.length === selectedFiles.length
+                ? ''
+                : '仅支持 10MB 以内的 JPEG、PNG、WebP 或 GIF 图片'
+        );
         if (newFiles.length === 0) return;
-
-        setError('');
 
         // 创建图片项并立即开始上传
         for (const file of newFiles) {
@@ -200,13 +262,16 @@ export function UploadForm() {
 
     // 移除图片
     const handleRemoveFile = (id: string) => {
-        setImages((prev) => {
-            const item = prev.find((img) => img.id === id);
-            if (item?.preview) {
-                URL.revokeObjectURL(item.preview);
-            }
-            return prev.filter((img) => img.id !== id);
-        });
+        removedImageIdsRef.current.add(id);
+        const item = imagesRef.current.find((image) => image.id === id);
+        if (item?.preview) {
+            URL.revokeObjectURL(item.preview);
+        }
+        if (item?.url && !cleanupRequestedUrlsRef.current.has(item.url)) {
+            cleanupRequestedUrlsRef.current.add(item.url);
+            requestUploadCleanup([item.url]);
+        }
+        setImages((prev) => prev.filter((image) => image.id !== id));
     };
 
     // 重试上传
@@ -240,18 +305,19 @@ export function UploadForm() {
 
         startTransition(async () => {
             try {
-                const firstImage = images[0];
-
-                const result = await uploadPhoto({
+                const result = await uploadPhotos({
                     title: title.trim(),
                     description: description.trim() || undefined,
-                    url: firstImage.url!,
-                    width: firstImage.width,
-                    height: firstImage.height,
                     emotionTag: emotionTag || undefined,
+                    images: images.map((image) => ({
+                        url: image.url!,
+                        width: image.width || undefined,
+                        height: image.height || undefined,
+                    })),
                 });
 
-                if (result.success && result.photoId) {
+                if (result.success && result.photoCount === images.length) {
+                    publishedRef.current = true;
                     // 跳转到照片墙页面
                     router.push(`/${locale}/photo`);
                     router.refresh();
@@ -305,6 +371,7 @@ export function UploadForm() {
                             <button
                                 type="button"
                                 onClick={() => handleRemoveFile(image.id)}
+                                disabled={isPending}
                                 className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-white rounded-full flex items-center justify-center"
                             >
                                 <X className="w-4 h-4" />
@@ -337,12 +404,12 @@ export function UploadForm() {
                 <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
                     multiple
                     onChange={handleFileSelect}
                     className="hidden"
                 />
-                <p className="text-xs text-muted-foreground">最多 9 张，选择后自动上传原图</p>
+                <p className="text-xs text-muted-foreground">最多 9 张，单张不超过 10MB</p>
             </div>
 
             {/* 标题 */}

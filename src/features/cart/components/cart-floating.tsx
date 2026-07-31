@@ -16,7 +16,15 @@ export function CartFloating() {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { items, removeItem, updateQuantity, getTotal, clearCart, getItemCount } = useCartStore();
+  const {
+    items,
+    gatheringId,
+    removeItem,
+    updateQuantity,
+    getTotal,
+    clearCart,
+    getItemCount,
+  } = useCartStore();
   const itemCount = getItemCount();
   const total = getTotal();
   const moneyFormatter = new Intl.NumberFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
@@ -31,6 +39,7 @@ export function CartFloating() {
     
     try {
       const result = await createOrder({
+        gatheringId,
         items: items.map((item) => ({
           dishId: item.dish.id,
           quantity: item.quantity,

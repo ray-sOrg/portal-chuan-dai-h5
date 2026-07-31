@@ -21,7 +21,8 @@ export function ChangePasswordForm() {
                 <input
                     name="currentPassword"
                     type="password"
-                    maxLength={16}
+                    autoComplete="current-password"
+                    maxLength={128}
                     placeholder={t("currentPassword")}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
@@ -32,7 +33,9 @@ export function ChangePasswordForm() {
                 <input
                     name="newPassword"
                     type="password"
-                    maxLength={16}
+                    autoComplete="new-password"
+                    minLength={6}
+                    maxLength={64}
                     placeholder={t("newPassword")}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
@@ -44,7 +47,9 @@ export function ChangePasswordForm() {
                 <input
                     name="confirmNewPassword"
                     type="password"
-                    maxLength={16}
+                    autoComplete="new-password"
+                    minLength={6}
+                    maxLength={64}
                     placeholder={t("confirmNewPassword")}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />

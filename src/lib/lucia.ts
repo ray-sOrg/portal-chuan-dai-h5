@@ -1,4 +1,5 @@
 import { PrismaAdapter } from "@lucia-auth/adapter-prisma";
+import type { UserRole } from "@prisma/client";
 import { Lucia, TimeSpan } from "lucia";
 
 import { prisma } from "./prisma";
@@ -19,6 +20,7 @@ export const lucia = new Lucia(adapter, {
       phone: attributes.phone,
       nickname: attributes.nickname,
       avatar: attributes.avatar,
+      role: attributes.role,
     };
   },
 });
@@ -29,8 +31,9 @@ declare module "lucia" {
     DatabaseUserAttributes: DatabaseUserAttributes;
   }
   interface DatabaseUserAttributes {
-    phone: string;
+    phone: string | null;
     nickname: string | null;
     avatar: string | null;
+    role: UserRole;
   }
 }

@@ -1,9 +1,21 @@
 'use server';
 
-import { Prisma } from '@prisma/client';
+import { randomUUID } from 'node:crypto';
+import { Prisma, type OrderStatus } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { getAuth } from '@/features/auth/queries/get-auth';
+import {
+  createOrderInputSchema,
+  getRequiredPreviousStatus,
+  orderIdSchema,
+  orderStatusSchema,
+  orderViewSchema,
+  updateOrderStatusInputSchema,
+  type CreateOrderInput,
+  type OrderView,
+  type UpdateOrderStatus,
+} from '../order-rules';
 
 type CreateOrderResult =
   | {
@@ -20,111 +32,173 @@ type CreateOrderResult =
 function generateOrderNumber(): string {
   const date = new Date();
   const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
-  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-  return `ORD-${dateStr}-${random}`;
+  const suffix = randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase();
+  return `ORD-${dateStr}-${suffix}`;
 }
 
 /**
  * 创建订单
  */
-export async function createOrder(data: {
-  items: { dishId: string; quantity: number; remark?: string }[];
-  remark?: string;
-  customerName?: string;
-}): Promise<CreateOrderResult> {
+export async function createOrder(
+  data: CreateOrderInput
+): Promise<CreateOrderResult> {
   const { user } = await getAuth();
 
   if (!user) {
     return { success: false, message: '请先登录', redirectTo: '/sign-in' };
   }
 
-  if (data.items.length === 0) {
-    return { success: false, message: '购物车为空' };
+  const parsed = createOrderInputSchema.safeParse(data);
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.issues[0]?.message || '订单参数无效',
+    };
   }
 
-  // 获取菜品信息并计算总价
-  let totalAmount = 0;
-  const orderItems: {
-    dishId: string;
-    dishName: string;
-    price: number;
-    quantity: number;
-    remark?: string;
-  }[] = [];
+  try {
+    const order = await prisma.$transaction(async (transaction) => {
+      const [dishes, destination] = await Promise.all([
+        transaction.dish.findMany({
+          where: {
+            id: { in: parsed.data.items.map((item) => item.dishId) },
+            isAvailable: true,
+          },
+          select: {
+            id: true,
+            name: true,
+            price: true,
+          },
+        }),
+        parsed.data.gatheringId
+          ? transaction.gathering.findFirst({
+              where: {
+                id: parsed.data.gatheringId,
+                isActive: true,
+              },
+              select: {
+                id: true,
+                hostId: true,
+              },
+            })
+          : transaction.user.findFirst({
+              where: { role: 'HOST' },
+              orderBy: { createdAt: 'asc' },
+              select: { id: true },
+            }),
+      ]);
 
-  for (const item of data.items) {
-    const dish = await prisma.dish.findUnique({
-      where: { id: item.dishId },
-    });
+      if (dishes.length !== parsed.data.items.length) {
+        throw new Error('DISH_UNAVAILABLE');
+      }
+      if (!destination) {
+        throw new Error('ORDER_HOST_UNAVAILABLE');
+      }
 
-    if (!dish) {
-      return { success: false, message: `菜品不存在: ${item.dishId}` };
-    }
+      const dishById = new Map(dishes.map((dish) => [dish.id, dish]));
+      const orderItems = parsed.data.items.map((item) => {
+        const dish = dishById.get(item.dishId);
+        if (!dish) {
+          throw new Error('DISH_UNAVAILABLE');
+        }
 
-    const price = typeof dish.price === 'number' ? dish.price : dish.price.toNumber();
-    totalAmount += price * item.quantity;
-
-    orderItems.push({
-      dishId: dish.id,
-      dishName: dish.name,
-      price,
-      quantity: item.quantity,
-      remark: item.remark,
-    });
-  }
-
-  // 创建订单（简化版，无需聚会）
-  const order = await prisma.order.create({
-    data: {
-      orderNumber: generateOrderNumber(),
-      customerId: user.id,
-      customerName: data.customerName || user.nickname || user.phone || 'Guest',
-      totalAmount,
-      remark: data.remark,
-      items: {
-        create: orderItems.map((item) => ({
-          dishId: item.dishId,
-          dishName: item.dishName,
-          price: item.price,
+        return {
+          dishId: dish.id,
+          dishName: dish.name,
+          price: dish.price,
           quantity: item.quantity,
           remark: item.remark,
-        })),
-      },
-    },
-    include: {
-      items: true,
-    },
-  });
+        };
+      });
 
-  revalidatePath('/orders');
-  
-  return {
-    success: true,
-    orderId: order.id,
-    orderNumber: order.orderNumber,
-  };
+      const totalAmount = orderItems.reduce(
+        (total, item) => total.plus(item.price.times(item.quantity)),
+        new Prisma.Decimal(0)
+      );
+
+      return transaction.order.create({
+        data: {
+          orderNumber: generateOrderNumber(),
+          customerId: user.id,
+          hostId:
+            'hostId' in destination ? destination.hostId : destination.id,
+          gatheringId: parsed.data.gatheringId,
+          customerName:
+            parsed.data.customerName ||
+            user.nickname ||
+            user.phone ||
+            'Guest',
+          totalAmount,
+          remark: parsed.data.remark,
+          items: {
+            create: orderItems,
+          },
+        },
+        select: {
+          id: true,
+          orderNumber: true,
+        },
+      });
+    });
+
+    revalidatePath('/orders');
+
+    return {
+      success: true,
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message === 'DISH_UNAVAILABLE') {
+      return {
+        success: false,
+        message: '部分菜品不存在或已下架，请刷新菜单后重试',
+      };
+    }
+    if (
+      error instanceof Error &&
+      error.message === 'ORDER_HOST_UNAVAILABLE'
+    ) {
+      return {
+        success: false,
+        message: parsed.data.gatheringId
+          ? '聚会不存在或已结束，请刷新后重试'
+          : '暂未配置接单主人，请联系管理员',
+      };
+    }
+
+    console.error('Create order error:', error);
+    return { success: false, message: '订单提交失败，请稍后重试' };
+  }
 }
 
 /**
  * 获取订单列表（根据用户角色）
  */
 export async function getOrders(options?: {
-  status?: string;
-  hostId?: string;
-  customerId?: string;
+  status?: OrderStatus;
+  view?: OrderView;
 }) {
   const { user } = await getAuth();
 
   if (!user) return [];
 
-  // 如果是主人，查自己发布的聚会的订单
-  // 如果是客户，查自己的订单
-  const where: Prisma.OrderWhereInput = {
-    customerId: user.id,
-  };
+  const parsedView = orderViewSchema.safeParse(options?.view ?? 'accessible');
+  if (!parsedView.success) return [];
+
+  const where: Prisma.OrderWhereInput =
+    parsedView.data === 'customer'
+      ? { customerId: user.id }
+      : parsedView.data === 'host'
+        ? { hostId: user.id }
+        : {
+            OR: [{ customerId: user.id }, { hostId: user.id }],
+          };
 
   if (options?.status) {
-    where.status = options.status as Prisma.OrderWhereInput['status'];
+    const parsedStatus = orderStatusSchema.safeParse(options.status);
+    if (!parsedStatus.success) return [];
+    where.status = parsedStatus.data;
   }
 
   const orders = await prisma.order.findMany({
@@ -146,29 +220,26 @@ export async function getOrderById(orderId: string) {
 
   if (!user) return null;
 
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
+  const parsedOrderId = orderIdSchema.safeParse(orderId);
+  if (!parsedOrderId.success) return null;
+
+  return prisma.order.findFirst({
+    where: {
+      id: parsedOrderId.data,
+      OR: [{ customerId: user.id }, { hostId: user.id }],
+    },
     include: {
       items: true,
     },
   });
-
-  if (!order) return null;
-
-  // 检查权限（只有订单主人可以查看）
-  if (order.customerId !== user.id) {
-    return null;
-  }
-
-  return order;
 }
 
 /**
- * 更新订单状态（主人操作）
+ * 顾客可以取消待处理订单，主人可以确认和完成订单。
  */
 export async function updateOrderStatus(
   orderId: string,
-  status: 'CONFIRMED' | 'COMPLEED' | 'CANCELLED'
+  status: UpdateOrderStatus
 ) {
   const { user } = await getAuth();
 
@@ -176,32 +247,60 @@ export async function updateOrderStatus(
     return { success: false, message: '请先登录' };
   }
 
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-  });
-
-  if (!order) {
-    return { success: false, message: '订单不存在' };
+  const parsed = updateOrderStatusInputSchema.safeParse({ orderId, status });
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.issues[0]?.message || '订单状态参数无效',
+    };
   }
 
-  // 检查是否是订单主人
-  if (order.customerId !== user.id) {
-    return { success: false, message: '只有订单主人可以操作' };
-  }
+  const requiredPreviousStatus = getRequiredPreviousStatus(parsed.data.status);
+  const actorWhere =
+    parsed.data.status === 'CANCELLED'
+      ? { customerId: user.id }
+      : { hostId: user.id };
+  const updateData: Prisma.OrderUpdateManyMutationInput = {
+    status: parsed.data.status,
+  };
 
-  const updateData: Prisma.OrderUpdateInput = { status };
-  
-  if (status === 'CONFIRMED') {
+  if (parsed.data.status === 'CONFIRMED') {
     updateData.confirmedAt = new Date();
   }
 
-  await prisma.order.update({
-    where: { id: orderId },
+  const result = await prisma.order.updateMany({
+    where: {
+      id: parsed.data.orderId,
+      ...actorWhere,
+      status: requiredPreviousStatus,
+    },
     data: updateData,
   });
 
+  if (result.count === 0) {
+    const order = await prisma.order.findUnique({
+      where: { id: parsed.data.orderId },
+      select: { customerId: true, hostId: true, status: true },
+    });
+
+    if (!order) {
+      return { success: false, message: '订单不存在' };
+    }
+    const isAuthorized =
+      parsed.data.status === 'CANCELLED'
+        ? order.customerId === user.id
+        : order.hostId === user.id;
+    if (!isAuthorized) {
+      return { success: false, message: '无权操作该订单' };
+    }
+    return {
+      success: false,
+      message: '当前订单状态不允许此操作，请刷新后重试',
+    };
+  }
+
   revalidatePath('/orders');
-  revalidatePath(`/orders/${orderId}`);
+  revalidatePath(`/orders/${parsed.data.orderId}`);
 
   return { success: true };
 }
@@ -219,6 +318,9 @@ export async function createGathering(data: {
 
   if (!user) {
     return { success: false, message: '请先登录' };
+  }
+  if (user.role !== 'HOST') {
+    return { success: false, message: '只有主人可以创建聚会' };
   }
 
   // 生成邀请码

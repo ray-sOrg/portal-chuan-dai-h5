@@ -4,6 +4,11 @@
 import COS from 'cos-nodejs-sdk-v5';
 import { createHash } from 'crypto';
 
+import {
+    parseImageDataUrl,
+    type ValidatedImage,
+} from '@/features/photo/photo-upload-rules';
+
 // COS 单例（避免重复创建）
 let cosInstance: COS | null = null;
 
@@ -30,50 +35,23 @@ interface UploadResult {
 }
 
 /**
- * 生成文件内容的 MD5 hash
+ * 生成文件内容的 SHA-256 hash
  */
 function generateFileHash(buffer: Buffer): string {
-    return createHash('md5').update(buffer).digest('hex');
+    return createHash('sha256').update(buffer).digest('hex');
 }
 
 /**
- * 从 base64 数据中提取文件信息
+ * 上传已验证的图片到 COS
  */
-function parseBase64(dataUrl: string): { buffer: Buffer; mimeType: string; ext: string } | null {
-    const matches = dataUrl.match(/^data:(.+);base64,(.+)$/);
-    if (!matches) return null;
-
-    const mimeType = matches[1];
-    const base64Data = matches[2];
-    const buffer = Buffer.from(base64Data, 'base64');
-
-    // 根据 MIME 类型确定扩展名
-    const extMap: Record<string, string> = {
-        'image/jpeg': '.jpg',
-        'image/png': '.png',
-        'image/webp': '.webp',
-        'image/gif': '.gif',
-    };
-    const ext = extMap[mimeType] || '.jpg';
-
-    return { buffer, mimeType, ext };
-}
-
-/**
- * 上传 base64 图片到 COS
- */
-export async function uploadBase64ToCOS(
-    base64Data: string,
-    subFolder?: string
+export async function uploadValidatedImageToCOS(
+    image: ValidatedImage,
+    subFolder?: string,
+    objectName?: string
 ): Promise<UploadResult> {
     try {
-        const parsed = parseBase64(base64Data);
-        if (!parsed) {
-            return { success: false, error: 'Invalid base64 data' };
-        }
-
-        const { buffer, mimeType, ext } = parsed;
-        const fileHash = generateFileHash(buffer);
+        const { buffer, mimeType, ext } = image;
+        const fileHash = objectName || generateFileHash(buffer);
         const key = subFolder
             ? `${BASE_PATH}/${subFolder}/${fileHash}${ext}`
             : `${BASE_PATH}/${fileHash}${ext}`;
@@ -103,6 +81,41 @@ export async function uploadBase64ToCOS(
         console.error('Upload error:', error);
         return { success: false, error: 'Upload failed' };
     }
+}
+
+export async function deleteObjectFromCOS(key: string): Promise<boolean> {
+    return new Promise((resolve) => {
+        getCOS().deleteObject(
+            {
+                Bucket: BUCKET,
+                Region: REGION,
+                Key: key,
+            },
+            (error: Error | null) => {
+                if (error) {
+                    console.error('COS delete error:', error);
+                    resolve(false);
+                    return;
+                }
+                resolve(true);
+            }
+        );
+    });
+}
+
+/**
+ * 验证并上传 base64 图片到 COS
+ */
+export async function uploadBase64ToCOS(
+    base64Data: string,
+    subFolder?: string
+): Promise<UploadResult> {
+    const image = parseImageDataUrl(base64Data);
+    if (!image) {
+        return { success: false, error: 'Invalid image data' };
+    }
+
+    return uploadValidatedImageToCOS(image, subFolder);
 }
 
 /**

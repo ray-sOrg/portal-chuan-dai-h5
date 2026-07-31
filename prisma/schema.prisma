@@ -22,22 +22,27 @@ enum Gender {
   OTHER
 }
 
+enum UserRole {
+  GUEST
+  HOST
+}
+
 // 菜品分类枚举
 enum DishCategory {
-  APPETIZER    // 开胃菜
-  MAIN_COURSE  // 主菜
-  SOUP         // 汤品
-  DESSERT      // 甜点
-  BEVERAGE     // 饮品
+  APPETIZER // 开胃菜
+  MAIN_COURSE // 主菜
+  SOUP // 汤品
+  DESSERT // 甜点
+  BEVERAGE // 饮品
 }
 
 // 情绪标签枚举
 enum EmotionTag {
-  HAPPY       // 开心
-  EXCITED     // 兴奋
-  WARM        // 温馨
-  NOSTALGIC   // 怀旧
-  FUNNY       // 搞笑
+  HAPPY // 开心
+  EXCITED // 兴奋
+  WARM // 温馨
+  NOSTALGIC // 怀旧
+  FUNNY // 搞笑
 }
 
 // ============================================================================
@@ -46,28 +51,32 @@ enum EmotionTag {
 
 // 用户表
 model User {
-  id            String     @id @default(uuid()) @db.Uuid
-  account       String     @unique              // 账号（3-16位，只能数字和字母）
-  passwordHash  String                          // 密码哈希
-  phone         String?    @unique              // 手机号（可选，后期绑定）
-  nickname      String?                         // 昵称
-  avatar        String?                         // 头像 URL
-  gender        Gender?                         // 性别
-  birthday      DateTime?                       // 生日
-  bio           String?    @db.VarChar(200)     // 个人简介
-  createdAt     DateTime   @default(now())      // 创建时间
-  updatedAt     DateTime   @updatedAt           // 更新时间
-  lastLoginAt   DateTime?                       // 最后登录时间
-  lastLoginIp   String?                         // 最后登录IP
+  id           String    @id @default(uuid()) @db.Uuid
+  account      String    @unique // 账号（3-16位，只能数字和字母）
+  passwordHash String // 密码哈希
+  phone        String?   @unique // 手机号（可选，后期绑定）
+  nickname     String? // 昵称
+  avatar       String? // 头像 URL
+  gender       Gender? // 性别
+  birthday     DateTime? // 生日
+  bio          String?   @db.VarChar(200) // 个人简介
+  createdAt    DateTime  @default(now()) // 创建时间
+  updatedAt    DateTime  @updatedAt // 更新时间
+  lastLoginAt  DateTime? // 最后登录时间
+  lastLoginIp  String? // 最后登录IP
+  role         UserRole  @default(GUEST) // 用户角色
 
   // 关联
-  sessions       Session[]
-  favorites      Favorite[]
-  photos         Photo[]
-  photoFavorites PhotoFavorite[]
-  photoComments  PhotoComment[]
+  sessions            Session[]
+  favorites           Favorite[]
+  photos              Photo[]
+  photoFavorites      PhotoFavorite[]
+  photoComments       PhotoComment[]
+  customerOrders      Order[]              @relation("CustomerOrders")
+  hostedOrders        Order[]              @relation("HostedOrders")
+  hostedGatherings    Gathering[]
+  pendingPhotoUploads PendingPhotoUpload[]
 }
-
 
 // 会话表（Lucia Auth 需要）
 model Session {
@@ -76,9 +85,20 @@ model Session {
   userId    String   @db.Uuid
 
   // 关联
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// 跨实例共享的认证失败计数
+model AuthRateLimit {
+  key             String    @id @db.VarChar(64)
+  attempts        Int       @default(0)
+  windowStartedAt DateTime  @default(now())
+  blockedUntil    DateTime?
+  updatedAt       DateTime  @updatedAt
+
+  @@index([blockedUntil])
 }
 
 // ============================================================================
@@ -88,21 +108,21 @@ model Session {
 // 菜品表
 model Dish {
   id           String       @id @default(uuid()) @db.Uuid
-  name         String                            // 菜品名称
-  nameEn       String?                           // 英文名称
-  description  String?      @db.VarChar(500)     // 描述
-  descEn       String?      @db.VarChar(500)     // 英文描述
-  price        Decimal      @db.Decimal(10, 2)   // 价格
-  image        String?                           // 图片URL
-  category     DishCategory                      // 分类
-  isSpicy      Boolean      @default(false)      // 是否辣
-  isVegetarian Boolean      @default(false)      // 是否素食
-  isAvailable  Boolean      @default(true)       // 是否可用
+  name         String // 菜品名称
+  nameEn       String? // 英文名称
+  description  String?      @db.VarChar(500) // 描述
+  descEn       String?      @db.VarChar(500) // 英文描述
+  price        Decimal      @db.Decimal(10, 2) // 价格
+  image        String? // 图片URL
+  category     DishCategory // 分类
+  isSpicy      Boolean      @default(false) // 是否辣
+  isVegetarian Boolean      @default(false) // 是否素食
+  isAvailable  Boolean      @default(true) // 是否可用
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
 
   // 关联
-  favorites    Favorite[]
+  favorites Favorite[]
 }
 
 // 收藏表（用户-菜品关联）
@@ -113,8 +133,8 @@ model Favorite {
   createdAt DateTime @default(now())
 
   // 关联
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  dish      Dish     @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dish Dish @relation(fields: [dishId], references: [id], onDelete: Cascade)
 
   @@unique([userId, dishId])
   @@index([userId])
@@ -127,25 +147,25 @@ model Favorite {
 
 // 照片表
 model Photo {
-  id           String       @id @default(uuid()) @db.Uuid
-  title        String                           // 标题
-  description  String?      @db.VarChar(500)    // 描述
-  url          String                           // 原图 URL
-  thumbnailUrl String?                          // 缩略图 URL
-  mediumUrl    String?                          // 中等尺寸 URL
-  width        Int?                             // 原图宽度
-  height       Int?                             // 原图高度
-  emotionTag   EmotionTag?                      // 情绪标签（可选）
-  gatheringId  String?      @db.Uuid            // 所属聚会（可选）
-  uploaderId   String       @db.Uuid            // 上传者
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id           String      @id @default(uuid()) @db.Uuid
+  title        String // 标题
+  description  String?     @db.VarChar(500) // 描述
+  url          String // 原图 URL
+  thumbnailUrl String? // 缩略图 URL
+  mediumUrl    String? // 中等尺寸 URL
+  width        Int? // 原图宽度
+  height       Int? // 原图高度
+  emotionTag   EmotionTag? // 情绪标签（可选）
+  gatheringId  String?     @db.Uuid // 所属聚会（可选）
+  uploaderId   String      @db.Uuid // 上传者
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
   // 关联
-  gathering    Gathering?   @relation(fields: [gatheringId], references: [id])
-  uploader     User         @relation(fields: [uploaderId], references: [id])
-  favorites    PhotoFavorite[]
-  comments     PhotoComment[]
+  gathering Gathering?      @relation(fields: [gatheringId], references: [id])
+  uploader  User            @relation(fields: [uploaderId], references: [id])
+  favorites PhotoFavorite[]
+  comments  PhotoComment[]
 
   @@index([uploaderId])
   @@index([gatheringId])
@@ -160,8 +180,8 @@ model PhotoFavorite {
   createdAt DateTime @default(now())
 
   // 关联
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
 
   @@unique([userId, photoId])
   @@index([userId])
@@ -171,18 +191,32 @@ model PhotoFavorite {
 // 照片评论表
 model PhotoComment {
   id        String   @id @default(uuid()) @db.Uuid
-  content   String   @db.VarChar(500)          // 评论内容
+  content   String   @db.VarChar(500) // 评论内容
   photoId   String   @db.Uuid
   authorId  String   @db.Uuid
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // 关联
-  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  photo  Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@index([photoId])
   @@index([authorId])
+}
+
+model PendingPhotoUpload {
+  id         String   @id @default(uuid()) @db.Uuid
+  key        String
+  url        String
+  uploaderId String   @db.Uuid
+  createdAt  DateTime @default(now())
+
+  uploader User @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  @@unique([uploaderId, url])
+  @@index([uploaderId])
+  @@index([createdAt])
 }
 
 // ============================================================================
@@ -191,30 +225,39 @@ model PhotoComment {
 
 // 订单状态枚举
 enum OrderStatus {
-  PENDING     // 待处理（等待主人接单）
-  CONFIRMED   // 已确认（主人接单）
-  COMPLEED   // 已完成
-  CANCELLED   // 已取消
+  PENDING // 待处理（等待主人接单）
+  CONFIRMED // 已确认（主人接单）
+  COMPLEED // 已完成
+  CANCELLED // 已取消
 }
 
 // 订单表
 model Order {
-  id            String       @id @default(uuid()) @db.Uuid
-  orderNumber   String       @unique              // 订单号（如：ORD-20250130-001）
-  customerId    String       @db.Uuid             // 客户（点餐的人）
-  customerName  String                           // 客户名称（昵称或手机号）
-  status        OrderStatus  @default(PENDING)    // 订单状态
-  totalAmount   Decimal      @db.Decimal(10, 2)   // 总金额
-  remark        String?      @db.VarChar(500)     // 备注
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  confirmedAt   DateTime?                        // 确认时间
+  id           String      @id @default(uuid()) @db.Uuid
+  orderNumber  String      @unique // 订单号（如：ORD-20250130-001）
+  customerId   String      @db.Uuid // 客户（点餐的人）
+  hostId       String      @db.Uuid // 主人（接单的人）
+  gatheringId  String?     @db.Uuid // 所属聚会
+  customerName String // 客户名称（昵称或手机号）
+  status       OrderStatus @default(PENDING) // 订单状态
+  totalAmount  Decimal     @db.Decimal(10, 2) // 总金额
+  remark       String?     @db.VarChar(500) // 备注
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  confirmedAt  DateTime? // 确认时间
 
   // 关联
-  items         OrderItem[]
+  customer  User        @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Restrict)
+  host      User        @relation("HostedOrders", fields: [hostId], references: [id], onDelete: Restrict)
+  gathering Gathering?  @relation(fields: [gatheringId], references: [id], onDelete: SetNull)
+  items     OrderItem[]
 
   @@index([customerId])
+  @@index([hostId])
+  @@index([gatheringId])
   @@index([status])
+  @@index([customerId, createdAt])
+  @@index([hostId, status, createdAt])
 }
 
 // 订单明细表
@@ -222,14 +265,14 @@ model OrderItem {
   id        String   @id @default(uuid()) @db.Uuid
   orderId   String   @db.Uuid
   dishId    String   @db.Uuid
-  dishName  String                       // 下单时的菜品名称
-  price     Decimal   @db.Decimal(10, 2) // 下单时的单价
-  quantity  Int      @default(1)         // 数量
-  remark    String?  @db.VarChar(200)    // 备注（如：不加香菜）
+  dishName  String // 下单时的菜品名称
+  price     Decimal  @db.Decimal(10, 2) // 下单时的单价
+  quantity  Int      @default(1) // 数量
+  remark    String?  @db.VarChar(200) // 备注（如：不加香菜）
   createdAt DateTime @default(now())
 
   // 关联
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
 }
@@ -240,19 +283,21 @@ model OrderItem {
 
 // 聚会表
 model Gathering {
-  id          String       @id @default(uuid()) @db.Uuid
-  title       String                           // 聚会标题
-  description String?      @db.VarChar(500)    // 描述
-  date        DateTime                         // 聚会日期
-  location    String?                          // 地点
-  inviteCode  String?      @unique             // 邀请码（可选）
-  isActive    Boolean     @default(true)       // 是否有效
-  hostId      String       @db.Uuid            // 聚会主人
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String // 聚会标题
+  description String?  @db.VarChar(500) // 描述
+  date        DateTime // 聚会日期
+  location    String? // 地点
+  inviteCode  String?  @unique // 邀请码（可选）
+  isActive    Boolean  @default(true) // 是否有效
+  hostId      String   @db.Uuid // 聚会主人
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // 关联
-  photos      Photo[]
+  host   User    @relation(fields: [hostId], references: [id], onDelete: Restrict)
+  photos Photo[]
+  orders Order[]
 
   @@index([inviteCode])
   @@index([hostId])

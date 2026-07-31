@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { SignInForm } from "@/features/auth/components";
 import { getAuth } from "@/features/auth/queries/get-auth";
+import { getSafeRedirectPath } from "@/features/auth/utils/safe-redirect";
 
 interface SignInPageProps {
     params: Promise<{ locale: string }>;
@@ -13,7 +14,10 @@ export default async function SignInPage({ params, searchParams }: SignInPagePro
     const { user } = await getAuth();
     const { locale } = await params;
     const search = await searchParams;
-    const redirectTo = search.redirect || `/${locale}/profile`;
+    const redirectTo = getSafeRedirectPath(
+        search.redirect,
+        `/${locale}/profile`
+    );
 
     // 已登录用户重定向
     if (user) {

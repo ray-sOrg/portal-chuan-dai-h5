@@ -14,6 +14,7 @@ import { prisma } from "@/lib/prisma";
 import { profilePath } from "@/paths";
 
 import { verifyOtp } from "../utils/otp-store";
+import { isDevOtpEnabled } from "../utils/dev-otp";
 
 const signInOtpSchema = z.object({
   phone: z
@@ -28,6 +29,10 @@ export const signInOtp = async (
   _actionState: ActionState,
   formData: FormData
 ): Promise<ActionState> => {
+  if (!isDevOtpEnabled()) {
+    return toActionState("ERROR", "短信验证码登录暂未开放");
+  }
+
   try {
     const { phone, code } = signInOtpSchema.parse(
       Object.fromEntries(formData)

@@ -24,11 +24,26 @@ declare module 'cos-nodejs-sdk-v5' {
         ETag: string;
     }
 
+    interface DeleteObjectParams {
+        Bucket: string;
+        Region: string;
+        Key: string;
+    }
+
+    interface DeleteObjectResult {
+        statusCode: number;
+        headers: Record<string, string>;
+    }
+
     class COS {
         constructor(config: COSConfig);
         putObject(
             params: PutObjectParams,
             callback: (err: Error | null, data?: PutObjectResult) => void
+        ): void;
+        deleteObject(
+            params: DeleteObjectParams,
+            callback: (err: Error | null, data?: DeleteObjectResult) => void
         ): void;
     }
 

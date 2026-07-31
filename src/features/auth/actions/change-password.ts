@@ -8,6 +8,7 @@ import {
   formErrorToActionState,
   toActionState,
 } from "@/components/form/utils/to-action-state";
+import { strongPasswordSchema } from "@/features/auth/auth-rules";
 import { prisma } from "@/lib/prisma";
 
 import { getAuth } from "../queries/get-auth";
@@ -15,14 +16,8 @@ import { getAuth } from "../queries/get-auth";
 const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "请输入当前密码"),
-    newPassword: z
-      .string()
-      .min(3, "新密码至少3位")
-      .max(16, "新密码最多16位"),
-    confirmNewPassword: z
-      .string()
-      .min(3, "确认密码至少3位")
-      .max(16, "确认密码最多16位"),
+    newPassword: strongPasswordSchema,
+    confirmNewPassword: strongPasswordSchema,
   })
   .superRefine((data, ctx) => {
     if (data.newPassword !== data.confirmNewPassword) {
@@ -39,9 +34,9 @@ export const changePassword = async (
   formData: FormData
 ): Promise<ActionState> => {
   try {
-    const { user } = await getAuth();
+    const { user, session } = await getAuth();
 
-    if (!user) {
+    if (!user || !session) {
       return toActionState("ERROR", "请先登录", formData);
     }
 
@@ -65,12 +60,20 @@ export const changePassword = async (
       return toActionState("ERROR", "当前密码错误", formData);
     }
 
-    // 更新密码
+    // 更新密码并让其他设备上的会话失效
     const newPasswordHash = await hash(newPassword);
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { passwordHash: newPasswordHash },
-    });
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: newPasswordHash },
+      }),
+      prisma.session.deleteMany({
+        where: {
+          userId: user.id,
+          id: { not: session.id },
+        },
+      }),
+    ]);
 
     return toActionState("SUCCESS", "密码修改成功");
   } catch (error) {

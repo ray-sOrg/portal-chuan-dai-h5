@@ -2,6 +2,7 @@
 
 import { hash } from "@node-rs/argon2";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import {
@@ -9,26 +10,19 @@ import {
   formErrorToActionState,
   toActionState,
 } from "@/components/form/utils/to-action-state";
-import { redirect } from "next/navigation";
+import {
+  accountSchema,
+  strongPasswordSchema,
+} from "@/features/auth/auth-rules";
 import { lucia } from "@/lib/lucia";
 import { prisma } from "@/lib/prisma";
 import { profilePath } from "@/paths";
 
 const signUpSchema = z
   .object({
-    account: z
-      .string()
-      .min(3, "账号至少3位")
-      .max(16, "账号最多16位")
-      .regex(/^[a-zA-Z0-9]+$/, "账号只能包含字母和数字"),
-    password: z
-      .string()
-      .min(3, "密码至少3位")
-      .max(16, "密码最多16位"),
-    confirmPassword: z
-      .string()
-      .min(3, "确认密码至少3位")
-      .max(16, "确认密码最多16位"),
+    account: accountSchema,
+    password: strongPasswordSchema,
+    confirmPassword: strongPasswordSchema,
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {

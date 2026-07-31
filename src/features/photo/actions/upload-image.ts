@@ -1,7 +1,8 @@
 'use server';
 
 import { getAuth } from '@/features/auth/queries/get-auth';
-import { uploadBase64ToCOS } from '@/lib/cos';
+import { parseImageDataUrl } from '@/features/photo/photo-upload-rules';
+import { uploadValidatedImageToCOS } from '@/lib/cos';
 
 interface UploadImageInput {
     base64Data: string;
@@ -25,12 +26,13 @@ export async function uploadImage(input: UploadImageInput): Promise<UploadImageR
         }
 
         // 验证数据
-        if (!input.base64Data || !input.base64Data.startsWith('data:image/')) {
+        const image = parseImageDataUrl(input.base64Data);
+        if (!image) {
             return { success: false, error: 'INVALID_DATA' };
         }
 
         // 上传到 COS
-        const result = await uploadBase64ToCOS(input.base64Data, 'photos');
+        const result = await uploadValidatedImageToCOS(image, 'photos');
         if (!result.success || !result.url) {
             return { success: false, error: 'UPLOAD_FAILED' };
         }

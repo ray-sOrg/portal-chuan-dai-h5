@@ -11,7 +11,7 @@
     "passwordPlaceholder": "请输入密码",
     "confirmPasswordPlaceholder": "请确认密码",
     "accountRule": "3-16位，只能包含字母和数字",
-    "passwordRule": "3-16位",
+    "passwordRule": "6-64位，需同时包含字母和数字",
     "forgotPassword": "忘记密码",
     "contactAdmin": "请联系管理员重置密码",
     "changePassword": "修改密码",

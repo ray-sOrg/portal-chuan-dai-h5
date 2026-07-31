@@ -23,6 +23,7 @@ export function SignUpForm() {
                 <input
                     name="account"
                     type="text"
+                    autoComplete="username"
                     maxLength={16}
                     placeholder={t("accountPlaceholder")}
                     defaultValue={actionState.payload?.get("account") as string}
@@ -36,9 +37,10 @@ export function SignUpForm() {
                 <input
                     name="password"
                     type="password"
-                    maxLength={16}
+                    autoComplete="new-password"
+                    minLength={6}
+                    maxLength={64}
                     placeholder={t("passwordPlaceholder")}
-                    defaultValue={actionState.payload?.get("password") as string}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <p className="text-xs text-muted-foreground mt-1">{t("passwordRule")}</p>
@@ -49,9 +51,10 @@ export function SignUpForm() {
                 <input
                     name="confirmPassword"
                     type="password"
-                    maxLength={16}
+                    autoComplete="new-password"
+                    minLength={6}
+                    maxLength={64}
                     placeholder={t("confirmPasswordPlaceholder")}
-                    defaultValue={actionState.payload?.get("confirmPassword") as string}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <FieldError name="confirmPassword" actionState={actionState} />

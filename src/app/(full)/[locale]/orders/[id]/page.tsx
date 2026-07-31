@@ -28,6 +28,13 @@ export default async function OrderDetailPage({
     notFound();
   }
 
+  const canCancel =
+    order.status === 'PENDING' && order.customerId === user.id;
+  const canConfirm =
+    order.status === 'PENDING' && order.hostId === user.id;
+  const canComplete =
+    order.status === 'CONFIRMED' && order.hostId === user.id;
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'PENDING':
@@ -134,38 +141,44 @@ export default async function OrderDetailPage({
         )}
 
         {/* 操作按钮 */}
-        {order.status === 'PENDING' && (
+        {(canCancel || canConfirm) && (
           <div className="flex gap-3 pt-4">
-            <form
-              action={async () => {
-                'use server';
-                await updateOrderStatus(id, 'CANCELLED');
-              }}
-            >
-              <button
-                type="submit"
-                className="flex-1 py-3 rounded-lg border font-medium hover:bg-muted transition-colors"
+            {canCancel && (
+              <form
+                className="flex-1"
+                action={async () => {
+                  'use server';
+                  await updateOrderStatus(id, 'CANCELLED');
+                }}
               >
-                {t('actions.cancel')}
-              </button>
-            </form>
-            <form
-              action={async () => {
-                'use server';
-                await updateOrderStatus(id, 'CONFIRMED');
-              }}
-            >
-              <button
-                type="submit"
-                className="flex-1 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-lg border font-medium hover:bg-muted transition-colors"
+                >
+                  {t('actions.cancel')}
+                </button>
+              </form>
+            )}
+            {canConfirm && (
+              <form
+                className="flex-1"
+                action={async () => {
+                  'use server';
+                  await updateOrderStatus(id, 'CONFIRMED');
+                }}
               >
-                {t('actions.confirm')}
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+                >
+                  {t('actions.confirm')}
+                </button>
+              </form>
+            )}
           </div>
         )}
 
-        {order.status === 'CONFIRMED' && (
+        {canComplete && (
           <form
               action={async () => {
                 'use server';

@@ -10,6 +10,7 @@ import {
 import { prisma } from "@/lib/prisma";
 
 import { canSendOtp, generateOtp, storeOtp } from "../utils/otp-store";
+import { isDevOtpEnabled } from "../utils/dev-otp";
 
 const sendOtpSchema = z.object({
   phone: z.string().regex(/^1[3-9]\d{9}$/, "请输入有效的手机号"),
@@ -20,6 +21,10 @@ export const sendOtp = async (
   _actionState: ActionState,
   formData: FormData
 ): Promise<ActionState> => {
+  if (!isDevOtpEnabled()) {
+    return toActionState("ERROR", "短信验证码登录暂未开放");
+  }
+
   try {
     const { phone, type } = sendOtpSchema.parse(Object.fromEntries(formData));
 
@@ -52,8 +57,6 @@ export const sendOtp = async (
     const code = generateOtp();
     storeOtp(phone, code);
 
-    // TODO: 集成真实的短信服务（阿里云/腾讯云）
-    // 开发环境下打印验证码
     console.log(`[DEV] 验证码发送到 ${phone}: ${code}`);
 
     return toActionState("SUCCESS", "验证码已发送", formData);
