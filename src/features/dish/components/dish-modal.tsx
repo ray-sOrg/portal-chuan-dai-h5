@@ -52,6 +52,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
               <img
                 src={dish.image}
                 alt={dish.name}
+                referrerPolicy="no-referrer"
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   const target = e.currentTarget;

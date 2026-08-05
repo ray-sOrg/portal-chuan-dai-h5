@@ -113,11 +113,17 @@
   "menu": {
     "categories": {
       "all": "All",
-      "appetizers": "Appetizers",
-      "mainCourses": "Main Courses",
+      "recommended": "Recommended",
+      "coldDishes": "Cold Dishes",
+      "seasonalVegetables": "Seasonal Vegetables",
+      "hotDishes": "Hot Dishes",
       "soups": "Soups",
-      "desserts": "Desserts",
-      "beverages": "Beverages"
+      "snacksAndStaples": "Snacks & Staples",
+      "seafood": "Seafood & River Fish",
+      "beverages": "Beverages",
+      "baijiu": "Baijiu",
+      "beer": "Beer",
+      "other": "Other"
     },
     "tags": {
       "spicy": "Spicy",

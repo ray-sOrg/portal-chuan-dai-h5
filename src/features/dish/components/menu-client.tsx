@@ -242,20 +242,6 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
 
   useEffect(() => releaseProgrammaticScroll, [releaseProgrammaticScroll]);
 
-  // 空状态
-  if (dishes.length === 0) {
-    return (
-      <div className="flex flex-col h-full bg-background">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center text-muted-foreground">
-            <p className="text-lg mb-2">{t('menu.empty')}</p>
-            <p className="text-sm">暂无菜品</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
       className="-mt-[0.8rem] flex flex-col overflow-hidden bg-background pt-2 text-foreground"
@@ -370,6 +356,7 @@ export function MenuClient({ initialDishes, initialFavorites }: MenuClientProps)
                             <img
                               src={dish.image || ''}
                               alt={dish.name}
+                              referrerPolicy="no-referrer"
                               className="h-full w-full object-cover"
                               onError={(e) => {
                                 const target = e.currentTarget;

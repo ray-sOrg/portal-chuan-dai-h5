@@ -42,11 +42,17 @@ export const DISH_CATEGORIES: {
   labelKey: string;
   theme: 'sichuan' | 'dai';
 }[] = [
-  { id: 'APPETIZER', labelKey: 'menu.categories.appetizers', theme: 'sichuan' },
-  { id: 'MAIN_COURSE', labelKey: 'menu.categories.mainCourses', theme: 'sichuan' },
+  { id: 'RECOMMENDED', labelKey: 'menu.categories.recommended', theme: 'sichuan' },
+  { id: 'COLD_DISH', labelKey: 'menu.categories.coldDishes', theme: 'dai' },
+  { id: 'SEASONAL_VEGETABLE', labelKey: 'menu.categories.seasonalVegetables', theme: 'dai' },
+  { id: 'HOT_DISH', labelKey: 'menu.categories.hotDishes', theme: 'sichuan' },
   { id: 'SOUP', labelKey: 'menu.categories.soups', theme: 'dai' },
-  { id: 'DESSERT', labelKey: 'menu.categories.desserts', theme: 'dai' },
+  { id: 'SNACK_STAPLE', labelKey: 'menu.categories.snacksAndStaples', theme: 'sichuan' },
+  { id: 'SEAFOOD', labelKey: 'menu.categories.seafood', theme: 'dai' },
   { id: 'BEVERAGE', labelKey: 'menu.categories.beverages', theme: 'dai' },
+  { id: 'BAIJIU', labelKey: 'menu.categories.baijiu', theme: 'sichuan' },
+  { id: 'BEER', labelKey: 'menu.categories.beer', theme: 'dai' },
+  { id: 'OTHER', labelKey: 'menu.categories.other', theme: 'dai' },
 ];
 
 // 根据分类获取主题色

@@ -1,10 +1,16 @@
 // 菜品分类枚举
 export type DishCategory = 
-  | 'APPETIZER'   // 开胃菜
-  | 'MAIN_COURSE' // 主菜
   | 'SOUP'        // 汤品
-  | 'DESSERT'     // 甜点
-  | 'BEVERAGE';   // 饮品
+  | 'BEVERAGE'    // 饮品
+  | 'COLD_DISH'   // 凉菜
+  | 'SEASONAL_VEGETABLE' // 时令蔬菜
+  | 'HOT_DISH'    // 热菜
+  | 'OTHER'       // 其他
+  | 'RECOMMENDED' // 推荐
+  | 'SNACK_STAPLE' // 小吃主食
+  | 'SEAFOOD'     // 海河鲜
+  | 'BAIJIU'      // 白酒
+  | 'BEER';       // 啤酒
 
 // 菜品类型（用于前端）
 export interface Dish {

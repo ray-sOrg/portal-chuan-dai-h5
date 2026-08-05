@@ -113,11 +113,17 @@
   "menu": {
     "categories": {
       "all": "全部",
-      "appetizers": "开胃菜",
-      "mainCourses": "主菜",
+      "recommended": "推荐",
+      "coldDishes": "凉菜",
+      "seasonalVegetables": "时令蔬菜",
+      "hotDishes": "热菜",
       "soups": "汤品",
-      "desserts": "甜点",
-      "beverages": "饮品"
+      "snacksAndStaples": "小吃主食",
+      "seafood": "海河鲜",
+      "beverages": "饮料",
+      "baijiu": "白酒",
+      "beer": "啤酒",
+      "other": "其他"
     },
     "tags": {
       "spicy": "辣",
