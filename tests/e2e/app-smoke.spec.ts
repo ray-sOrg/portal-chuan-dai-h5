@@ -88,11 +88,11 @@ test('bottom navigation moves between primary tabs', async ({ page }) => {
 test('menu category navigation keeps the selected category stable', async ({ page }) => {
   await page.goto('/zh/menu');
 
-  const mainCourse = page.getByRole('button', { name: '主菜' });
-  await mainCourse.click();
+  const hotDishes = page.getByRole('button', { name: '热菜' });
+  await hotDishes.click();
 
-  await expect(mainCourse).toHaveAttribute('aria-current', 'page');
-  await expect(page.getByRole('heading', { name: '主菜' })).toBeInViewport();
+  await expect(hotDishes).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('heading', { name: '热菜' })).toBeInViewport();
 
   const soup = page.getByRole('button', { name: '汤品' });
   await soup.click();
@@ -104,17 +104,17 @@ test('menu category navigation keeps the selected category stable', async ({ pag
 test('menu search filters dishes by keyword', async ({ page }) => {
   await page.goto('/zh/menu');
 
-  await page.getByPlaceholder('搜索菜品').fill('麻婆');
+  await page.getByPlaceholder('搜索菜品').fill('红烧');
 
-  await expect(page.getByRole('heading', { name: '麻婆豆腐' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '口水鸡' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: '招牌红烧肉' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '炸酥肉' })).toHaveCount(0);
 });
 
 test('menu can add a dish to the local cart', async ({ page }) => {
   await page.goto('/zh/menu');
 
-  await page.getByRole('heading', { name: '傣味鬼鸡' }).click();
-  await expect(page.getByRole('heading', { name: '傣味鬼鸡', level: 2 })).toBeVisible();
+  await page.getByRole('heading', { name: '炸酥肉' }).click();
+  await expect(page.getByRole('heading', { name: '炸酥肉', level: 2 })).toBeVisible();
 
   await page.getByRole('button', { name: /确认添加到菜单/ }).click();
 
@@ -123,13 +123,13 @@ test('menu can add a dish to the local cart', async ({ page }) => {
   await cartButton.click();
 
   await expect(page.getByRole('heading', { name: /购物车/ })).toBeVisible();
-  await expect(page.getByText('傣味鬼鸡').last()).toBeVisible();
+  await expect(page.getByText('炸酥肉').last()).toBeVisible();
 });
 
 test('cart quantity controls and clear action work locally', async ({ page }) => {
   await page.goto('/zh/menu');
 
-  await page.getByRole('heading', { name: '傣味鬼鸡' }).click();
+  await page.getByRole('heading', { name: '炸酥肉' }).click();
   await page.getByRole('button', { name: /确认添加到菜单/ }).click();
 
   const cartButton = page.getByRole('button', { name: '购物车' });
