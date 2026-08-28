@@ -12,7 +12,7 @@ const dishes = [
   {
     name: '云南傣味手舂荷包蛋',
     category: DishCategory.COLD_DISH,
-    image: `${dishImageBaseUrl}/yun-nan-dai-wei-shou-chong-he-bao-dan.webp`,
+    image: `${dishImageBaseUrl}/yun-nan-dai-wei-shou-chong-he-bao-dan-v2.webp`,
   },
   {
     name: '蒜香空心菜',
@@ -23,12 +23,12 @@ const dishes = [
   {
     name: '招牌红烧肉',
     category: DishCategory.HOT_DISH,
-    image: `${dishImageBaseUrl}/zhao-pai-hong-shao-rou.webp`,
+    image: `${dishImageBaseUrl}/zhao-pai-hong-shao-rou-v2.webp`,
   },
   {
     name: '炸酥肉',
     category: DishCategory.SNACK_STAPLE,
-    image: `${dishImageBaseUrl}/zha-su-rou.webp`,
+    image: `${dishImageBaseUrl}/zha-su-rou-v2.webp`,
   },
   {
     name: '百香果番茄煮鱼',
