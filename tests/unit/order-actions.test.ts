@@ -152,6 +152,30 @@ describe('order actions', () => {
     expect(result.success).toBe(true);
   });
 
+  it('accepts packaged fitness meals by package count', async () => {
+    mocks.transaction.dish.findMany.mockResolvedValue([{
+      id: DISH_ID,
+      name: '每日坚果',
+      price: new Prisma.Decimal('8.00'),
+      category: 'FITNESS_MEAL',
+      nutrition: { basis: 'PER_SERVING', servingUnit: 'serving' },
+    }]);
+    mocks.transaction.order.create.mockImplementation(async ({ data }) => {
+      expect(data.totalAmount.toString()).toBe('24');
+      expect(data.items.create[0]).toEqual({
+        dishId: DISH_ID,
+        dishName: '每日坚果',
+        price: new Prisma.Decimal('8.00'),
+        quantity: 3,
+        remark: undefined,
+      });
+      return { id: ORDER_ID, orderNumber: 'ORD-TEST' };
+    });
+
+    const result = await createOrder({ items: [{ dishId: DISH_ID, quantity: 3 }] });
+    expect(result.success).toBe(true);
+  });
+
   it('rejects missing or unavailable dishes', async () => {
     mocks.transaction.dish.findMany.mockResolvedValue([]);
 

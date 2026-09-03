@@ -6,7 +6,7 @@ import { X, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { useCartStore } from '@/features/cart/store';
 import { toast } from 'sonner';
 import type { Dish } from '@/features/dish/types';
-import { hasGramNutrition, nutrientAtWeight, parseWeight } from '@/features/dish/weight';
+import { hasGramNutrition, hasPackNutrition, nutrientAtWeight, parseWeight } from '@/features/dish/weight';
 
 interface DishModalProps {
   dish: Dish;
@@ -21,7 +21,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
   const [remark, setRemark] = useState('');
 
   const handleAddToCart = () => {
-    if (isFitness) {
+    if (isFitness && !isPack) {
       if (!weightGrams) return;
       addFitnessItem(dish, weightGrams, remark || undefined);
     } else {
@@ -34,6 +34,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
   const isFitness = dish.category === 'FITNESS_MEAL';
   const weightGrams = parseWeight(weightInput);
   const nutrition = hasGramNutrition(dish.nutrition) ? dish.nutrition : null;
+  const isPack = isFitness && hasPackNutrition(dish.nutrition);
   const nutritionRows = nutrition && weightGrams ? [
     ['热量', nutrientAtWeight(nutrition.caloriesKcal, weightGrams), 'kcal'],
     ['蛋白质', nutrientAtWeight(nutrition.proteinG, weightGrams), 'g'],
@@ -137,7 +138,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
             )}
           </div>
 
-          {isFitness ? (
+          {isFitness && !isPack ? (
             <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
               <label htmlFor="fitness-weight" className="block font-medium text-emerald-950">食用重量</label>
               <div className="flex items-center gap-2">
@@ -160,7 +161,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
           ) : (
           /* 数量选择 */
           <div className="flex items-center justify-between py-2 border-t border-b border-border">
-            <span className="font-medium">数量</span>
+            <span className="font-medium">{isPack ? '包数' : '数量'}</span>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -178,6 +179,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
             </div>
           </div>
           )}
+          {isPack && <p className="-mt-2 text-xs text-muted-foreground">每包 {dish.nutrition!.defaultServingAmount}g · {dish.nutrition!.caloriesKcal} kcal · 蛋白质 {dish.nutrition!.proteinG}g</p>}
 
           {/* 备注 */}
           <div className="space-y-2">
@@ -196,8 +198,8 @@ export function DishModal({ dish, onClose }: DishModalProps) {
         <div className="shrink-0 p-4 bg-background border-t">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="text-sm text-muted-foreground">
-              <span>{isFitness ? '重量:' : '数量:'}</span>
-              <span className="ml-2 font-medium text-foreground">{isFitness ? (weightGrams ? `${weightGrams}g` : '待填写') : quantity}</span>
+              <span>{isFitness && !isPack ? '重量:' : isPack ? '包数:' : '数量:'}</span>
+              <span className="ml-2 font-medium text-foreground">{isFitness && !isPack ? (weightGrams ? `${weightGrams}g` : '待填写') : isPack ? `${quantity}包` : quantity}</span>
             </div>
             {remark && (
               <div className="text-xs text-muted-foreground truncate max-w-[200px]">
@@ -207,11 +209,11 @@ export function DishModal({ dish, onClose }: DishModalProps) {
           </div>
           <button
             onClick={handleAddToCart}
-            disabled={isFitness && !weightGrams}
+            disabled={isFitness && !isPack && !weightGrams}
             className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-md disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ShoppingCart className="w-5 h-5" />
-            {isFitness ? (weightGrams ? `确认添加 ${weightGrams}g` : '请先填写重量') : `确认添加到菜单 × ${quantity}`}
+            {isFitness && !isPack ? (weightGrams ? `确认添加 ${weightGrams}g` : '请先填写重量') : `确认添加到菜单 × ${quantity}${isPack ? '包' : ''}`}
           </button>
         </div>
       </div>

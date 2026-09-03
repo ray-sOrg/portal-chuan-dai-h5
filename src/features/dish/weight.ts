@@ -17,6 +17,16 @@ export function hasGramNutrition(nutrition: DishNutrition | null | undefined) {
   return nutrition?.basis === 'PER_100G' && nutrition.servingUnit === 'g';
 }
 
+export function hasPackNutrition(nutrition: DishNutrition | null | undefined) {
+  return nutrition?.basis === 'PER_SERVING' && nutrition.servingUnit === 'serving';
+}
+
+export function usesGramWeight(dish: { category: string; nutrition?: DishNutrition | null }) {
+  // Old persisted cart entries may not contain nutrition yet. Only an explicit
+  // packaged-serving basis opts a fitness dish out of gram entry.
+  return dish.category === 'FITNESS_MEAL' && !hasPackNutrition(dish.nutrition);
+}
+
 export function nutrientAtWeight(value: number | null, grams: number): number | null {
   return value === null ? null : Math.round(value * grams) / 100;
 }

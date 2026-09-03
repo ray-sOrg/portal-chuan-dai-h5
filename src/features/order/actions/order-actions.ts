@@ -105,8 +105,16 @@ export async function createOrder(
         }
 
         const isFitness = dish.category === 'FITNESS_MEAL';
-        if (
+        const isGramFitness =
           isFitness &&
+          dish.nutrition?.basis === 'PER_100G' &&
+          dish.nutrition.servingUnit === 'g';
+        const isPackFitness =
+          isFitness &&
+          dish.nutrition?.basis === 'PER_SERVING' &&
+          dish.nutrition.servingUnit === 'serving';
+        if (
+          isGramFitness &&
           (item.quantity !== 1 ||
             !item.weightGrams ||
             dish.nutrition?.basis !== 'PER_100G' ||
@@ -114,7 +122,10 @@ export async function createOrder(
         ) {
           throw new Error('FITNESS_WEIGHT_REQUIRED');
         }
-        if (!isFitness && item.weightGrams !== undefined) {
+        if (
+          (!isGramFitness && item.weightGrams !== undefined) ||
+          (isFitness && !isGramFitness && !isPackFitness)
+        ) {
           throw new Error('FITNESS_WEIGHT_INVALID');
         }
 
@@ -122,8 +133,8 @@ export async function createOrder(
           dishId: dish.id,
           dishName: dish.name,
           price: dish.price,
-          quantity: isFitness ? 1 : item.quantity,
-          ...(isFitness ? { weightGrams: new Prisma.Decimal(item.weightGrams!) } : {}),
+          quantity: isGramFitness ? 1 : item.quantity,
+          ...(isGramFitness ? { weightGrams: new Prisma.Decimal(item.weightGrams!) } : {}),
           remark: item.remark,
         };
       });

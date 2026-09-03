@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { createOrder } from '@/features/order/actions/order-actions';
 import { useRouter } from '@/i18n/routing';
 import { ordersPath, signInPath } from '@/paths';
-import { isValidWeight, itemSubtotal, parseWeight } from '@/features/dish/weight';
+import { hasPackNutrition, isValidWeight, itemSubtotal, parseWeight, usesGramWeight } from '@/features/dish/weight';
 
 export function CartFloating() {
   const t = useTranslations('cart');
@@ -29,7 +29,7 @@ export function CartFloating() {
   } = useCartStore();
   const itemCount = getItemCount();
   const total = getTotal();
-  const hasInvalidWeight = items.some((item) => item.dish.category === 'FITNESS_MEAL' && !isValidWeight(item.weightGrams));
+  const hasInvalidWeight = items.some((item) => usesGramWeight(item.dish) && !isValidWeight(item.weightGrams));
   const moneyFormatter = new Intl.NumberFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
     style: 'currency',
     currency: 'CNY',
@@ -130,7 +130,7 @@ export function CartFloating() {
                       {/* 菜品信息 */}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium truncate">{item.dish.name}</h3>
-                        {item.dish.category === 'FITNESS_MEAL' ? (
+                        {usesGramWeight(item.dish) ? (
                           <div className="mt-2 flex items-center gap-2">
                             <input inputMode="decimal" aria-label={`${item.dish.name}食用重量`}
                               defaultValue={item.weightGrams ?? ''} placeholder="填写重量"
@@ -138,7 +138,7 @@ export function CartFloating() {
                               className="w-28 rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
                             <span className="text-sm font-medium">g</span>
                           </div>
-                        ) : <p className="text-sm text-muted-foreground">x {item.quantity}</p>}
+                        ) : <p className="text-sm text-muted-foreground">x {item.quantity}{hasPackNutrition(item.dish.nutrition) ? '包' : ''}</p>}
                         {item.remark && (
                           <p className="text-xs text-muted-foreground mt-1">
                             备注: {item.remark}
@@ -151,7 +151,7 @@ export function CartFloating() {
                       </div>
 
                       {/* 数量控制 */}
-                      {item.dish.category !== 'FITNESS_MEAL' && <div className="flex items-center gap-2">
+                      {!usesGramWeight(item.dish) && <div className="flex items-center gap-2">
                         <button
                           onClick={() => updateQuantity(item.dish.id, item.quantity - 1)}
                           className="w-8 h-8 rounded-full bg-background flex items-center justify-center hover:bg-muted"

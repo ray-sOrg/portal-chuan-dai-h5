@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Dish } from '../dish/types';
-import { isValidWeight, itemSubtotal } from '../dish/weight';
+import { isValidWeight, itemSubtotal, usesGramWeight } from '../dish/weight';
 
 export interface CartItem {
   dish: Dish;
@@ -36,7 +36,7 @@ export const useCartStore = create<CartStore>()(
       gatheringTitle: undefined,
 
       addItem: (dish, quantity = 1, remark) => {
-        if (dish.category === 'FITNESS_MEAL') return;
+        if (usesGramWeight(dish)) return;
         set((state) => {
           const existingItem = state.items.find((item) => item.dish.id === dish.id);
           
@@ -59,7 +59,7 @@ export const useCartStore = create<CartStore>()(
       },
 
       addFitnessItem: (dish, weightGrams, remark) => {
-        if (dish.category !== 'FITNESS_MEAL' || !isValidWeight(weightGrams))
+        if (!usesGramWeight(dish) || !isValidWeight(weightGrams))
           return;
         set((state) => {
           const existing = state.items.find((item) => item.dish.id === dish.id);
@@ -82,7 +82,7 @@ export const useCartStore = create<CartStore>()(
 
       updateWeight: (dishId, weightGrams) => {
         set((state) => ({ items: state.items.map((item) =>
-          item.dish.id === dishId && item.dish.category === 'FITNESS_MEAL'
+          item.dish.id === dishId && usesGramWeight(item.dish)
             ? { ...item, quantity: 1, weightGrams: isValidWeight(weightGrams) ? weightGrams : undefined }
             : item) }));
       },
@@ -94,11 +94,8 @@ export const useCartStore = create<CartStore>()(
       },
 
       updateQuantity: (dishId, quantity) => {
-        if (
-          get().items.find((item) => item.dish.id === dishId)?.dish.category ===
-          'FITNESS_MEAL'
-        )
-          return;
+        const item = get().items.find((entry) => entry.dish.id === dishId);
+        if (item && usesGramWeight(item.dish)) return;
         if (quantity <= 0) {
           get().removeItem(dishId);
           return;
@@ -132,7 +129,7 @@ export const useCartStore = create<CartStore>()(
           const price = typeof item.dish.price === 'number' 
             ? item.dish.price 
             : Number(item.dish.price);
-          return sum + (item.dish.category === 'FITNESS_MEAL' && !isValidWeight(item.weightGrams)
+          return sum + (usesGramWeight(item.dish) && !isValidWeight(item.weightGrams)
             ? 0 : itemSubtotal(price, item.quantity, item.weightGrams));
         }, 0);
       },
@@ -147,7 +144,7 @@ export const useCartStore = create<CartStore>()(
       migrate: (persisted) => {
         const state = persisted as Pick<CartStore, 'items' | 'gatheringId' | 'gatheringTitle'>;
         return { ...state, items: (state.items ?? []).map((item) =>
-          item.dish.category === 'FITNESS_MEAL'
+          usesGramWeight(item.dish)
             ? { ...item, quantity: 1, weightGrams: undefined }
             : item) };
       },

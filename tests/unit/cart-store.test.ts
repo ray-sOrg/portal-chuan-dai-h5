@@ -21,6 +21,18 @@ const fitnessDish: Dish = {
   name: '希腊式酸奶',
   category: 'FITNESS_MEAL',
   price: 12,
+  nutrition: {
+    basis: 'PER_100G', servingUnit: 'g', defaultServingAmount: 100,
+    caloriesKcal: 100, proteinG: 10, carbohydrateG: 5, fatG: 2,
+    fiberG: null, sugarG: null, sodiumMg: null, labelImageUrl: null,
+  },
+};
+
+const packagedFitnessDish: Dish = {
+  ...fitnessDish,
+  id: 'fitness-pack-1',
+  name: '每日坚果',
+  nutrition: { ...fitnessDish.nutrition!, basis: 'PER_SERVING', servingUnit: 'serving', defaultServingAmount: 30 },
 };
 
 describe('cart store', () => {
@@ -63,5 +75,13 @@ describe('cart store', () => {
     useCartStore.getState().addFitnessItem(fitnessDish, 80);
     expect(useCartStore.getState().items).toHaveLength(1);
     expect(useCartStore.getState().items[0].weightGrams).toBe(80);
+  });
+
+  it('stores individually packaged fitness meals by package count', () => {
+    useCartStore.getState().addItem(packagedFitnessDish, 2);
+    useCartStore.getState().addItem(packagedFitnessDish, 1);
+    expect(useCartStore.getState().items[0]).toMatchObject({ quantity: 3 });
+    expect(useCartStore.getState().items[0].weightGrams).toBeUndefined();
+    expect(useCartStore.getState().getTotal()).toBe(36);
   });
 });
