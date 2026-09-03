@@ -53,6 +53,7 @@ export const DISH_CATEGORIES: {
   { id: 'BAIJIU', labelKey: 'menu.categories.baijiu', theme: 'sichuan' },
   { id: 'BEER', labelKey: 'menu.categories.beer', theme: 'dai' },
   { id: 'OTHER', labelKey: 'menu.categories.other', theme: 'dai' },
+  { id: 'FITNESS_MEAL', labelKey: 'menu.categories.fitnessMeal', theme: 'dai' },
 ];
 
 // 根据分类获取主题色

@@ -6,6 +6,7 @@ export type DishCategory =
   | 'SEASONAL_VEGETABLE' // 时令蔬菜
   | 'HOT_DISH'    // 热菜
   | 'OTHER'       // 其他
+  | 'FITNESS_MEAL' // 健身餐
   | 'RECOMMENDED' // 推荐
   | 'SNACK_STAPLE' // 小吃主食
   | 'SEAFOOD'     // 海河鲜

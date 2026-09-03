@@ -40,6 +40,7 @@ enum DishCategory {
   SEAFOOD // 海河鲜
   BAIJIU // 白酒
   BEER // 啤酒
+  FITNESS_MEAL // 健身餐
 }
 
 // 情绪标签枚举
@@ -129,6 +130,25 @@ model Dish {
 
   // 关联
   favorites Favorite[]
+  nutrition DishNutrition?
+}
+
+// Nutrition values are label values, NOT totals for defaultServingAmount.
+// PER_100G/PER_100ML use 100g/100ml; PER_SERVING uses one piece/serving.
+model DishNutrition {
+  dishId               String  @id @db.Uuid
+  basis                String  @db.VarChar(20)
+  defaultServingAmount Decimal @db.Decimal(10, 2)
+  servingUnit          String  @db.VarChar(10)
+  caloriesKcal         Decimal @db.Decimal(10, 2)
+  proteinG             Decimal? @db.Decimal(10, 2)
+  carbohydrateG        Decimal? @db.Decimal(10, 2)
+  fatG                 Decimal? @db.Decimal(10, 2)
+  fiberG               Decimal? @db.Decimal(10, 2)
+  sugarG               Decimal? @db.Decimal(10, 2)
+  sodiumMg             Decimal? @db.Decimal(10, 2)
+  labelImageUrl        String?
+  dish Dish @relation(fields: [dishId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 // 收藏表（用户-菜品关联）

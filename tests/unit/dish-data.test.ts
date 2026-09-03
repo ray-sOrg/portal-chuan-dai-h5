@@ -16,6 +16,7 @@ describe('dish category metadata', () => {
       'BAIJIU',
       'BEER',
       'OTHER',
+      'FITNESS_MEAL',
     ]);
   });
 
@@ -31,5 +32,6 @@ describe('dish category metadata', () => {
     expect(getCategoryTheme('BAIJIU')).toBe('sichuan');
     expect(getCategoryTheme('BEER')).toBe('dai');
     expect(getCategoryTheme('OTHER')).toBe('dai');
+    expect(getCategoryTheme('FITNESS_MEAL')).toBe('dai');
   });
 });
