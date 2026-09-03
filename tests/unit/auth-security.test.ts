@@ -62,10 +62,21 @@ describe("action payload sanitizing", () => {
 
     const sanitized = sanitizeActionPayload(formData);
 
-    expect(sanitized?.get("account")).toBe("user01");
-    expect(Array.from(sanitized?.keys() ?? [])).toEqual(["account"]);
-    expect(toActionState("ERROR", "failed", formData).payload?.get("password"))
-      .toBeNull();
+    expect(sanitized).toEqual({ account: "user01" });
+    expect(toActionState("ERROR", "failed", formData).payload?.password)
+      .toBeUndefined();
+  });
+
+  it("preserves text fields after serialization without returning files or secrets", () => {
+    const formData = new FormData();
+    formData.set("account", "user01");
+    formData.set("password", "Passw0rd");
+    formData.set("avatar", new File(["image"], "avatar.png"));
+
+    const state = JSON.parse(JSON.stringify(toActionState("ERROR", "failed", formData)));
+
+    expect(state.payload).toEqual({ account: "user01" });
+    expect(sanitizeActionPayload()).toBeUndefined();
   });
 
   it("does not expose internal error messages", () => {

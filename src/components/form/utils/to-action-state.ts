@@ -5,7 +5,7 @@ export type ActionState = {
   message: string;
   fieldError: Record<string, string[] | undefined>;
   status?: "SUCCESS" | "ERROR";
-  payload?: FormData;
+  payload?: Record<string, string>;
 };
 
 export const EMPTY_ACTION_STATE: ActionState = {
@@ -30,14 +30,16 @@ export const sanitizeActionPayload = (formData?: FormData) => {
     return undefined;
   }
 
-  const sanitized = new FormData();
+  // Return plain text fields across the Server Action boundary. Some runtimes
+  // serialize FormData through toJSON(), losing its methods on the client.
+  const sanitized: [string, string][] = [];
   for (const [name, value] of formData.entries()) {
-    if (!isSensitiveField(name)) {
-      sanitized.append(name, value);
+    if (!isSensitiveField(name) && typeof value === "string") {
+      sanitized.push([name, value]);
     }
   }
 
-  return sanitized;
+  return Object.fromEntries(sanitized);
 };
 
 export const formErrorToActionState = (

@@ -26,7 +26,7 @@ export function SignUpForm() {
                     autoComplete="username"
                     maxLength={16}
                     placeholder={t("accountPlaceholder")}
-                    defaultValue={actionState.payload?.get("account") as string}
+                    defaultValue={actionState.payload?.account}
                     className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 />
                 <p className="text-xs text-muted-foreground mt-1">{t("accountRule")}</p>
