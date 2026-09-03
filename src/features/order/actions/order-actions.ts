@@ -68,6 +68,8 @@ export async function createOrder(
             id: true,
             name: true,
             price: true,
+            category: true,
+            nutrition: { select: { basis: true, servingUnit: true } },
           },
         }),
         parsed.data.gatheringId
@@ -102,19 +104,41 @@ export async function createOrder(
           throw new Error('DISH_UNAVAILABLE');
         }
 
+        const isFitness = dish.category === 'FITNESS_MEAL';
+        if (
+          isFitness &&
+          (item.quantity !== 1 ||
+            !item.weightGrams ||
+            dish.nutrition?.basis !== 'PER_100G' ||
+            dish.nutrition.servingUnit !== 'g')
+        ) {
+          throw new Error('FITNESS_WEIGHT_REQUIRED');
+        }
+        if (!isFitness && item.weightGrams !== undefined) {
+          throw new Error('FITNESS_WEIGHT_INVALID');
+        }
+
         return {
           dishId: dish.id,
           dishName: dish.name,
           price: dish.price,
-          quantity: item.quantity,
+          quantity: isFitness ? 1 : item.quantity,
+          ...(isFitness ? { weightGrams: new Prisma.Decimal(item.weightGrams!) } : {}),
           remark: item.remark,
         };
       });
 
       const totalAmount = orderItems.reduce(
-        (total, item) => total.plus(item.price.times(item.quantity)),
+        (total, item) =>
+          total.plus(
+            item.price.times(
+              'weightGrams' in item
+                ? item.weightGrams!.div(100)
+                : item.quantity
+            )
+          ),
         new Prisma.Decimal(0)
-      );
+      ).toDecimalPlaces(2);
 
       return transaction.order.create({
         data: {
@@ -154,6 +178,13 @@ export async function createOrder(
         success: false,
         message: '部分菜品不存在或已下架，请刷新菜单后重试',
       };
+    }
+    if (
+      error instanceof Error &&
+      (error.message === 'FITNESS_WEIGHT_REQUIRED' ||
+        error.message === 'FITNESS_WEIGHT_INVALID')
+    ) {
+      return { success: false, message: '健身菜请填写实际食用克重后再提交' };
     }
     if (
       error instanceof Error &&

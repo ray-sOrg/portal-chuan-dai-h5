@@ -29,4 +29,19 @@ export interface Dish {
   createdAt: Date;
   updatedAt: Date;
   isFavorite?: boolean;
+  nutrition?: DishNutrition | null;
+}
+
+export interface DishNutrition {
+  basis: string;
+  servingUnit: string;
+  defaultServingAmount: number;
+  caloriesKcal: number;
+  proteinG: number | null;
+  carbohydrateG: number | null;
+  fatG: number | null;
+  fiberG: number | null;
+  sugarG: number | null;
+  sodiumMg: number | null;
+  labelImageUrl: string | null;
 }

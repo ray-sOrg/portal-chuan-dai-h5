@@ -1,22 +1,6 @@
 import type { DishCategory } from '../types';
 
-// 菜品类型（用于前端，不依赖 Prisma）
-export interface Dish {
-  id: string;
-  name: string;
-  nameEn?: string | null;
-  description?: string | null;
-  descEn?: string | null;
-  price: number;
-  image?: string | null;
-  category: DishCategory;
-  isSpicy: boolean;
-  isVegetarian: boolean;
-  isAvailable: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  isFavorite?: boolean;
-}
+export type { Dish } from '../types';
 
 // 川菜主题色
 export const THEME_COLORS = {

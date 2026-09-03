@@ -111,7 +111,7 @@ export default async function OrderDetailPage({
                 <div className="flex-1">
                   <div className="font-medium">{item.dishName}</div>
                   <div className="text-sm text-muted-foreground">
-                    ¥{item.price.toNumber().toFixed(2)} × {item.quantity}
+                    {item.weightGrams ? `${item.weightGrams.toNumber()}g · ¥${item.price.toNumber().toFixed(2)}/100g` : `¥${item.price.toNumber().toFixed(2)} × ${item.quantity}`}
                   </div>
                   {item.remark && (
                     <div className="text-xs text-muted-foreground mt-1">
@@ -120,7 +120,7 @@ export default async function OrderDetailPage({
                   )}
                 </div>
                 <div className="font-medium">
-                  ¥{(item.price.toNumber() * item.quantity).toFixed(2)}
+                  ¥{item.price.times(item.weightGrams ? item.weightGrams.div(100) : item.quantity).toNumber().toFixed(2)}
                 </div>
               </div>
             ))}

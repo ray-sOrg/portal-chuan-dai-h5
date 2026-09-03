@@ -6,6 +6,7 @@ import { X, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { useCartStore } from '@/features/cart/store';
 import { toast } from 'sonner';
 import type { Dish } from '@/features/dish/types';
+import { hasGramNutrition, nutrientAtWeight, parseWeight } from '@/features/dish/weight';
 
 interface DishModalProps {
   dish: Dish;
@@ -14,15 +15,31 @@ interface DishModalProps {
 
 export function DishModal({ dish, onClose }: DishModalProps) {
   const t = useTranslations('menu');
-  const { addItem } = useCartStore();
+  const { addItem, addFitnessItem } = useCartStore();
   const [quantity, setQuantity] = useState(1);
+  const [weightInput, setWeightInput] = useState('');
   const [remark, setRemark] = useState('');
 
   const handleAddToCart = () => {
-    addItem(dish, quantity, remark || undefined);
+    if (isFitness) {
+      if (!weightGrams) return;
+      addFitnessItem(dish, weightGrams, remark || undefined);
+    } else {
+      addItem(dish, quantity, remark || undefined);
+    }
     toast.success(t('addedToMenu'));
     onClose();
   };
+
+  const isFitness = dish.category === 'FITNESS_MEAL';
+  const weightGrams = parseWeight(weightInput);
+  const nutrition = hasGramNutrition(dish.nutrition) ? dish.nutrition : null;
+  const nutritionRows = nutrition && weightGrams ? [
+    ['热量', nutrientAtWeight(nutrition.caloriesKcal, weightGrams), 'kcal'],
+    ['蛋白质', nutrientAtWeight(nutrition.proteinG, weightGrams), 'g'],
+    ['碳水', nutrientAtWeight(nutrition.carbohydrateG, weightGrams), 'g'],
+    ['脂肪', nutrientAtWeight(nutrition.fatG, weightGrams), 'g'],
+  ].filter((row) => row[1] !== null) : [];
 
   const colors = {
     primary: 'bg-red-500',
@@ -36,7 +53,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
       {/* 弹窗内容 */}
-      <div className="relative bg-background rounded-t-3xl w-full max-h-[85vh] overflow-hidden animate-in slide-in-from-bottom duration-300">
+      <div className="relative bg-background rounded-t-3xl w-full max-h-[85vh] overflow-hidden animate-in slide-in-from-bottom duration-300 flex flex-col">
         {/* 关闭按钮 */}
         <button
           onClick={onClose}
@@ -46,7 +63,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
         </button>
 
         {/* 图片 */}
-        <div className="aspect-video bg-muted relative">
+        <div className="aspect-video max-h-[34vh] shrink-0 bg-muted relative">
           {dish.image ? (
             <>
               <img
@@ -92,7 +109,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
         </div>
 
         {/* 内容 */}
-        <div className="p-4 space-y-4 overflow-y-auto pb-40">
+        <div className="p-4 space-y-4 overflow-y-auto pb-4">
           {/* 标题 */}
           <div>
             <h2 className="text-xl font-bold">{dish.name}</h2>
@@ -120,7 +137,28 @@ export function DishModal({ dish, onClose }: DishModalProps) {
             )}
           </div>
 
-          {/* 数量选择 */}
+          {isFitness ? (
+            <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
+              <label htmlFor="fitness-weight" className="block font-medium text-emerald-950">食用重量</label>
+              <div className="flex items-center gap-2">
+                <input id="fitness-weight" inputMode="decimal" value={weightInput}
+                  onChange={(event) => setWeightInput(event.target.value)}
+                  placeholder="请填写实际重量" aria-describedby="fitness-weight-help"
+                  className="min-w-0 flex-1 rounded-xl border bg-background px-4 py-3 text-lg outline-none focus:border-emerald-600" />
+                <span className="font-semibold text-emerald-950">g</span>
+              </div>
+              <p id="fitness-weight-help" className="text-xs text-emerald-800">支持 0.01–10000g，营养按实际克重计算</p>
+              {nutritionRows.length > 0 && (
+                <div className="grid grid-cols-4 gap-2 border-t border-emerald-200 pt-3">
+                  {nutritionRows.map(([label, value, unit]) => <div key={String(label)} className="text-center">
+                    <div className="text-[11px] text-muted-foreground">{label}</div>
+                    <div className="text-sm font-semibold">{Number(value).toFixed(1)}<span className="text-[10px] font-normal">{unit}</span></div>
+                  </div>)}
+                </div>
+              )}
+            </div>
+          ) : (
+          /* 数量选择 */
           <div className="flex items-center justify-between py-2 border-t border-b border-border">
             <span className="font-medium">数量</span>
             <div className="flex items-center gap-3">
@@ -139,6 +177,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
               </button>
             </div>
           </div>
+          )}
 
           {/* 备注 */}
           <div className="space-y-2">
@@ -154,11 +193,11 @@ export function DishModal({ dish, onClose }: DishModalProps) {
         </div>
 
         {/* 底部按钮 */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
+        <div className="shrink-0 p-4 bg-background border-t">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="text-sm text-muted-foreground">
-              <span>数量:</span>
-              <span className="ml-2 font-medium text-foreground">{quantity}</span>
+              <span>{isFitness ? '重量:' : '数量:'}</span>
+              <span className="ml-2 font-medium text-foreground">{isFitness ? (weightGrams ? `${weightGrams}g` : '待填写') : quantity}</span>
             </div>
             {remark && (
               <div className="text-xs text-muted-foreground truncate max-w-[200px]">
@@ -168,10 +207,11 @@ export function DishModal({ dish, onClose }: DishModalProps) {
           </div>
           <button
             onClick={handleAddToCart}
-            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-md"
+            disabled={isFitness && !weightGrams}
+            className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-md disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ShoppingCart className="w-5 h-5" />
-            确认添加到菜单 × {quantity}
+            {isFitness ? (weightGrams ? `确认添加 ${weightGrams}g` : '请先填写重量') : `确认添加到菜单 × ${quantity}`}
           </button>
         </div>
       </div>

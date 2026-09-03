@@ -17,6 +17,7 @@ function serializeOrder(order: OrderWithItems) {
     items: order.items.map((item) => ({
       ...item,
       price: item.price.toNumber(),
+      weightGrams: item.weightGrams?.toNumber() ?? null,
     })),
   };
 }

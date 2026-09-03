@@ -136,11 +136,11 @@ model Dish {
 // Nutrition values are label values, NOT totals for defaultServingAmount.
 // PER_100G/PER_100ML use 100g/100ml; PER_SERVING uses one piece/serving.
 model DishNutrition {
-  dishId               String  @id @db.Uuid
-  basis                String  @db.VarChar(20)
-  defaultServingAmount Decimal @db.Decimal(10, 2)
-  servingUnit          String  @db.VarChar(10)
-  caloriesKcal         Decimal @db.Decimal(10, 2)
+  dishId               String   @id @db.Uuid
+  basis                String   @db.VarChar(20)
+  defaultServingAmount Decimal  @db.Decimal(10, 2)
+  servingUnit          String   @db.VarChar(10)
+  caloriesKcal         Decimal  @db.Decimal(10, 2)
   proteinG             Decimal? @db.Decimal(10, 2)
   carbohydrateG        Decimal? @db.Decimal(10, 2)
   fatG                 Decimal? @db.Decimal(10, 2)
@@ -148,7 +148,7 @@ model DishNutrition {
   sugarG               Decimal? @db.Decimal(10, 2)
   sodiumMg             Decimal? @db.Decimal(10, 2)
   labelImageUrl        String?
-  dish Dish @relation(fields: [dishId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  dish                 Dish     @relation(fields: [dishId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 // 收藏表（用户-菜品关联）
@@ -288,14 +288,15 @@ model Order {
 
 // 订单明细表
 model OrderItem {
-  id        String   @id @default(uuid()) @db.Uuid
-  orderId   String   @db.Uuid
-  dishId    String   @db.Uuid
-  dishName  String // 下单时的菜品名称
-  price     Decimal  @db.Decimal(10, 2) // 下单时的单价
-  quantity  Int      @default(1) // 数量
-  remark    String?  @db.VarChar(200) // 备注（如：不加香菜）
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid()) @db.Uuid
+  orderId     String   @db.Uuid
+  dishId      String   @db.Uuid
+  dishName    String // 下单时的菜品名称
+  price       Decimal  @db.Decimal(10, 2) // 下单时的单价
+  quantity    Int      @default(1) // 数量
+  weightGrams Decimal? @db.Decimal(10, 2) // 健身菜实际食用重量（克）
+  remark      String?  @db.VarChar(200) // 备注（如：不加香菜）
+  createdAt   DateTime @default(now())
 
   // 关联
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)

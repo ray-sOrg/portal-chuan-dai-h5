@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { createOrder } from '@/features/order/actions/order-actions';
 import { useRouter } from '@/i18n/routing';
 import { ordersPath, signInPath } from '@/paths';
+import { isValidWeight, itemSubtotal, parseWeight } from '@/features/dish/weight';
 
 export function CartFloating() {
   const t = useTranslations('cart');
@@ -21,12 +22,14 @@ export function CartFloating() {
     gatheringId,
     removeItem,
     updateQuantity,
+    updateWeight,
     getTotal,
     clearCart,
     getItemCount,
   } = useCartStore();
   const itemCount = getItemCount();
   const total = getTotal();
+  const hasInvalidWeight = items.some((item) => item.dish.category === 'FITNESS_MEAL' && !isValidWeight(item.weightGrams));
   const moneyFormatter = new Intl.NumberFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
     style: 'currency',
     currency: 'CNY',
@@ -43,6 +46,7 @@ export function CartFloating() {
         items: items.map((item) => ({
           dishId: item.dish.id,
           quantity: item.quantity,
+          weightGrams: item.weightGrams,
           remark: item.remark,
         })),
       });
@@ -122,13 +126,19 @@ export function CartFloating() {
               ) : (
                 <div className="space-y-4">
                   {items.map((item) => (
-                    <div key={item.dish.id} className="flex gap-3 p-3 bg-muted/50 rounded-lg">
+                    <div key={item.dish.id} className="flex flex-wrap gap-3 p-3 bg-muted/50 rounded-lg">
                       {/* 菜品信息 */}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium truncate">{item.dish.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          x {item.quantity}
-                        </p>
+                        {item.dish.category === 'FITNESS_MEAL' ? (
+                          <div className="mt-2 flex items-center gap-2">
+                            <input inputMode="decimal" aria-label={`${item.dish.name}食用重量`}
+                              defaultValue={item.weightGrams ?? ''} placeholder="填写重量"
+                              onChange={(event) => updateWeight(item.dish.id, parseWeight(event.target.value))}
+                              className="w-28 rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
+                            <span className="text-sm font-medium">g</span>
+                          </div>
+                        ) : <p className="text-sm text-muted-foreground">x {item.quantity}</p>}
                         {item.remark && (
                           <p className="text-xs text-muted-foreground mt-1">
                             备注: {item.remark}
@@ -137,11 +147,11 @@ export function CartFloating() {
                       </div>
 
                       <div className="min-w-[72px] text-right text-sm font-medium">
-                        {moneyFormatter.format(item.dish.price * item.quantity)}
+                        {moneyFormatter.format(itemSubtotal(item.dish.price, item.quantity, item.weightGrams))}
                       </div>
 
                       {/* 数量控制 */}
-                      <div className="flex items-center gap-2">
+                      {item.dish.category !== 'FITNESS_MEAL' && <div className="flex items-center gap-2">
                         <button
                           onClick={() => updateQuantity(item.dish.id, item.quantity - 1)}
                           className="w-8 h-8 rounded-full bg-background flex items-center justify-center hover:bg-muted"
@@ -157,7 +167,7 @@ export function CartFloating() {
                         >
                           <Plus className="w-4 h-4" />
                         </button>
-                      </div>
+                      </div>}
 
                       {/* 删除按钮 */}
                       <button
@@ -180,7 +190,7 @@ export function CartFloating() {
                 <div>
                   <div className="text-sm text-muted-foreground">{t('total')}</div>
                   <div className="text-xs text-muted-foreground">
-                    {itemCount} {t('item')}
+                    {items.length} 道菜
                   </div>
                 </div>
                 <span className="text-xl font-bold">{moneyFormatter.format(total)}</span>
@@ -196,10 +206,10 @@ export function CartFloating() {
                 </button>
                 <button
                   onClick={handleSubmitOrder}
-                  disabled={isSubmitting || items.length === 0}
+                  disabled={isSubmitting || items.length === 0 || hasInvalidWeight}
                   className="flex-1 bg-primary text-primary-foreground rounded-lg py-2 font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
-                  {isSubmitting ? t('submitting') : t('submit')}
+                  {hasInvalidWeight ? '请填写健身菜重量' : isSubmitting ? t('submitting') : t('submit')}
                 </button>
               </div>
             </div>

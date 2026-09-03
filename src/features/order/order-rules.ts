@@ -17,6 +17,9 @@ const orderItemSchema = z.object({
     .min(1, '菜品数量不能小于 1')
     .max(10, '单个菜品最多选择 10 份'),
   remark: optionalTrimmedString(200, '单项备注最多 200 个字符'),
+  weightGrams: z.number().min(0.01, '食用重量不能小于 0.01g').max(10000, '食用重量不能超过 10000g')
+    .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-7, '食用重量最多支持两位小数')
+    .optional(),
 });
 
 export const createOrderInputSchema = z

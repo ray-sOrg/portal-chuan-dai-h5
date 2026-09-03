@@ -59,6 +59,18 @@ describe('createOrderInputSchema', () => {
 
     expect(result.success).toBe(true);
   });
+
+  it('accepts gram weights with up to two decimal places', () => {
+    expect(createOrderInputSchema.safeParse({
+      items: [{ dishId: DISH_ID, quantity: 1, weightGrams: 125.5 }],
+    }).success).toBe(true);
+  });
+
+  it.each([0, -1, 10000.01, 1.234])('rejects invalid gram weight %s', (weightGrams) => {
+    expect(createOrderInputSchema.safeParse({
+      items: [{ dishId: DISH_ID, quantity: 1, weightGrams }],
+    }).success).toBe(false);
+  });
 });
 
 describe('order status transitions', () => {
