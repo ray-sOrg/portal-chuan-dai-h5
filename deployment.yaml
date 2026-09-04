@@ -67,6 +67,20 @@ spec:
                   key: COS_SECRET_KEY
             - name: COS_REGION
               value: "ap-chengdu"
+            - name: APP_URL
+              value: "https://chuan-dai.tt829.cn"
+            - name: OIDC_ISSUER
+              value: "https://auth.tt829.cn/realms/tt829"
+            - name: OIDC_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: portal-chuan-dai-oidc
+                  key: client-id
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: portal-chuan-dai-oidc
+                  key: client-secret
           readinessProbe:
             httpGet:
               path: /api/health

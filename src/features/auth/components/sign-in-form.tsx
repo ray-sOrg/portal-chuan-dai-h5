@@ -21,11 +21,12 @@ export function SignInForm({ redirectTo = profilePath }: SignInFormProps) {
     const [actionState, action] = useActionState(signInWithRedirect, EMPTY_ACTION_STATE);
 
     return (
-        <Form
-            action={action}
-            actionState={actionState}
-            className="flex flex-col gap-y-4"
-        >
+        <>
+        <a href={`/api/auth/oidc/login?returnTo=${encodeURIComponent(redirectTo)}`} className="mb-5 flex h-10 w-full items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90">
+            使用统一账号登录
+        </a>
+        <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" /><span>迁移期间旧账号登录</span><span className="h-px flex-1 bg-border" /></div>
+        <Form action={action} actionState={actionState} className="flex flex-col gap-y-4">
             <div>
                 <input
                     name="account"
@@ -65,5 +66,6 @@ export function SignInForm({ redirectTo = profilePath }: SignInFormProps) {
                 </p>
             </div>
         </Form>
+        </>
     );
 }
