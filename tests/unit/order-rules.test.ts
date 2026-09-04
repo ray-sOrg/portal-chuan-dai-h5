@@ -71,6 +71,12 @@ describe('createOrderInputSchema', () => {
       items: [{ dishId: DISH_ID, quantity: 1, weightGrams }],
     }).success).toBe(false);
   });
+
+  it('accepts a valid liquid volume', () => {
+    expect(createOrderInputSchema.safeParse({
+      items: [{ dishId: DISH_ID, quantity: 1, volumeMl: 250 }],
+    }).success).toBe(true);
+  });
 });
 
 describe('order status transitions', () => {

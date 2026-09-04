@@ -113,6 +113,10 @@ export async function createOrder(
           isFitness &&
           dish.nutrition?.basis === 'PER_SERVING' &&
           dish.nutrition.servingUnit === 'serving';
+        const isVolumeFitness =
+          isFitness &&
+          dish.nutrition?.basis === 'PER_100ML' &&
+          dish.nutrition.servingUnit === 'ml';
         if (
           isGramFitness &&
           (item.quantity !== 1 ||
@@ -122,9 +126,13 @@ export async function createOrder(
         ) {
           throw new Error('FITNESS_WEIGHT_REQUIRED');
         }
+        if (isVolumeFitness && (item.quantity !== 1 || !item.volumeMl)) {
+          throw new Error('FITNESS_VOLUME_REQUIRED');
+        }
         if (
           (!isGramFitness && item.weightGrams !== undefined) ||
-          (isFitness && !isGramFitness && !isPackFitness)
+          (!isVolumeFitness && item.volumeMl !== undefined) ||
+          (isFitness && !isGramFitness && !isPackFitness && !isVolumeFitness)
         ) {
           throw new Error('FITNESS_WEIGHT_INVALID');
         }
@@ -133,8 +141,9 @@ export async function createOrder(
           dishId: dish.id,
           dishName: dish.name,
           price: dish.price,
-          quantity: isGramFitness ? 1 : item.quantity,
+          quantity: isGramFitness || isVolumeFitness ? 1 : item.quantity,
           ...(isGramFitness ? { weightGrams: new Prisma.Decimal(item.weightGrams!) } : {}),
+          ...(isVolumeFitness ? { volumeMl: new Prisma.Decimal(item.volumeMl!) } : {}),
           remark: item.remark,
         };
       });
@@ -145,6 +154,8 @@ export async function createOrder(
             item.price.times(
               'weightGrams' in item
                 ? item.weightGrams!.div(100)
+                : 'volumeMl' in item
+                  ? item.volumeMl!.div(100)
                 : item.quantity
             )
           ),
@@ -193,9 +204,10 @@ export async function createOrder(
     if (
       error instanceof Error &&
       (error.message === 'FITNESS_WEIGHT_REQUIRED' ||
-        error.message === 'FITNESS_WEIGHT_INVALID')
+        error.message === 'FITNESS_WEIGHT_INVALID' ||
+        error.message === 'FITNESS_VOLUME_REQUIRED')
     ) {
-      return { success: false, message: '健身菜请填写实际食用克重后再提交' };
+      return { success: false, message: '健身菜请填写实际食用量后再提交' };
     }
     if (
       error instanceof Error &&

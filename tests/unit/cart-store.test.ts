@@ -35,6 +35,13 @@ const packagedFitnessDish: Dish = {
   nutrition: { ...fitnessDish.nutrition!, basis: 'PER_SERVING', servingUnit: 'serving', defaultServingAmount: 30 },
 };
 
+const liquidFitnessDish: Dish = {
+  ...fitnessDish,
+  id: 'fitness-liquid-1',
+  name: '鲜牛奶',
+  nutrition: { ...fitnessDish.nutrition!, basis: 'PER_100ML', servingUnit: 'ml' },
+};
+
 describe('cart store', () => {
   beforeEach(() => {
     useCartStore.getState().clearCart();
@@ -83,5 +90,12 @@ describe('cart store', () => {
     expect(useCartStore.getState().items[0]).toMatchObject({ quantity: 3 });
     expect(useCartStore.getState().items[0].weightGrams).toBeUndefined();
     expect(useCartStore.getState().getTotal()).toBe(36);
+  });
+
+  it('stores liquid fitness meals in millilitres', () => {
+    useCartStore.getState().addFitnessItem(liquidFitnessDish, 250);
+    expect(useCartStore.getState().items[0]).toMatchObject({ quantity: 1, volumeMl: 250 });
+    expect(useCartStore.getState().items[0].weightGrams).toBeUndefined();
+    expect(useCartStore.getState().getTotal()).toBe(30);
   });
 });

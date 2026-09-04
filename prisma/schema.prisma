@@ -295,6 +295,7 @@ model OrderItem {
   price       Decimal  @db.Decimal(10, 2) // 下单时的单价
   quantity    Int      @default(1) // 数量
   weightGrams Decimal? @db.Decimal(10, 2) // 健身菜实际食用重量（克）
+  volumeMl    Decimal? @db.Decimal(10, 2) // 液体健身菜实际饮用量（毫升）
   remark      String?  @db.VarChar(200) // 备注（如：不加香菜）
   createdAt   DateTime @default(now())
 

@@ -176,6 +176,24 @@ describe('order actions', () => {
     expect(result.success).toBe(true);
   });
 
+  it('stores liquid fitness meals in millilitres', async () => {
+    mocks.transaction.dish.findMany.mockResolvedValue([{
+      id: DISH_ID,
+      name: '鲜牛奶',
+      price: new Prisma.Decimal('4.00'),
+      category: 'FITNESS_MEAL',
+      nutrition: { basis: 'PER_100ML', servingUnit: 'ml' },
+    }]);
+    mocks.transaction.order.create.mockImplementation(async ({ data }) => {
+      expect(data.totalAmount.toString()).toBe('10');
+      expect(data.items.create[0].volumeMl.toString()).toBe('250');
+      return { id: ORDER_ID, orderNumber: 'ORD-TEST' };
+    });
+
+    const result = await createOrder({ items: [{ dishId: DISH_ID, quantity: 1, volumeMl: 250 }] });
+    expect(result.success).toBe(true);
+  });
+
   it('rejects missing or unavailable dishes', async () => {
     mocks.transaction.dish.findMany.mockResolvedValue([]);
 

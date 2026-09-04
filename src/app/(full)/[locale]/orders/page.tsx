@@ -18,6 +18,7 @@ function serializeOrder(order: OrderWithItems) {
       ...item,
       price: item.price.toNumber(),
       weightGrams: item.weightGrams?.toNumber() ?? null,
+      volumeMl: item.volumeMl?.toNumber() ?? null,
     })),
   };
 }

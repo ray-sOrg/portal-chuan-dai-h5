@@ -6,7 +6,7 @@ import { X, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { useCartStore } from '@/features/cart/store';
 import { toast } from 'sonner';
 import type { Dish } from '@/features/dish/types';
-import { hasGramNutrition, hasPackNutrition, nutrientAtWeight, parseWeight } from '@/features/dish/weight';
+import { hasPackNutrition, measurementUnit, nutrientAtWeight, parseWeight } from '@/features/dish/weight';
 
 interface DishModalProps {
   dish: Dish;
@@ -33,13 +33,14 @@ export function DishModal({ dish, onClose }: DishModalProps) {
 
   const isFitness = dish.category === 'FITNESS_MEAL';
   const weightGrams = parseWeight(weightInput);
-  const nutrition = hasGramNutrition(dish.nutrition) ? dish.nutrition : null;
   const isPack = isFitness && hasPackNutrition(dish.nutrition);
-  const nutritionRows = nutrition && weightGrams ? [
-    ['热量', nutrientAtWeight(nutrition.caloriesKcal, weightGrams), 'kcal'],
-    ['蛋白质', nutrientAtWeight(nutrition.proteinG, weightGrams), 'g'],
-    ['碳水', nutrientAtWeight(nutrition.carbohydrateG, weightGrams), 'g'],
-    ['脂肪', nutrientAtWeight(nutrition.fatG, weightGrams), 'g'],
+  const unit = measurementUnit(dish) ?? 'g';
+  const measuredNutrition = !isPack ? dish.nutrition : null;
+  const nutritionRows = measuredNutrition && weightGrams ? [
+    ['热量', nutrientAtWeight(measuredNutrition.caloriesKcal, weightGrams), 'kcal'],
+    ['蛋白质', nutrientAtWeight(measuredNutrition.proteinG, weightGrams), 'g'],
+    ['碳水', nutrientAtWeight(measuredNutrition.carbohydrateG, weightGrams), 'g'],
+    ['脂肪', nutrientAtWeight(measuredNutrition.fatG, weightGrams), 'g'],
   ].filter((row) => row[1] !== null) : [];
 
   const colors = {
@@ -140,15 +141,15 @@ export function DishModal({ dish, onClose }: DishModalProps) {
 
           {isFitness && !isPack ? (
             <div className="space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
-              <label htmlFor="fitness-weight" className="block font-medium text-emerald-950">食用重量</label>
+              <label htmlFor="fitness-weight" className="block font-medium text-emerald-950">{unit === 'ml' ? '饮用量' : '食用重量'}</label>
               <div className="flex items-center gap-2">
                 <input id="fitness-weight" inputMode="decimal" value={weightInput}
                   onChange={(event) => setWeightInput(event.target.value)}
-                  placeholder="请填写实际重量" aria-describedby="fitness-weight-help"
+                  placeholder={unit === 'ml' ? '请填写实际饮用量' : '请填写实际重量'} aria-describedby="fitness-weight-help"
                   className="min-w-0 flex-1 rounded-xl border bg-background px-4 py-3 text-lg outline-none focus:border-emerald-600" />
-                <span className="font-semibold text-emerald-950">g</span>
+                <span className="font-semibold text-emerald-950">{unit}</span>
               </div>
-              <p id="fitness-weight-help" className="text-xs text-emerald-800">支持 0.01–10000g，营养按实际克重计算</p>
+              <p id="fitness-weight-help" className="text-xs text-emerald-800">支持 0.01–10000{unit}，营养按实际{unit === 'ml' ? '饮用量' : '克重'}计算</p>
               {nutritionRows.length > 0 && (
                 <div className="grid grid-cols-4 gap-2 border-t border-emerald-200 pt-3">
                   {nutritionRows.map(([label, value, unit]) => <div key={String(label)} className="text-center">
@@ -198,8 +199,8 @@ export function DishModal({ dish, onClose }: DishModalProps) {
         <div className="shrink-0 p-4 bg-background border-t">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="text-sm text-muted-foreground">
-              <span>{isFitness && !isPack ? '重量:' : isPack ? '包数:' : '数量:'}</span>
-              <span className="ml-2 font-medium text-foreground">{isFitness && !isPack ? (weightGrams ? `${weightGrams}g` : '待填写') : isPack ? `${quantity}包` : quantity}</span>
+              <span>{isFitness && !isPack ? (unit === 'ml' ? '饮用量:' : '重量:') : isPack ? '包数:' : '数量:'}</span>
+              <span className="ml-2 font-medium text-foreground">{isFitness && !isPack ? (weightGrams ? `${weightGrams}${unit}` : '待填写') : isPack ? `${quantity}包` : quantity}</span>
             </div>
             {remark && (
               <div className="text-xs text-muted-foreground truncate max-w-[200px]">
@@ -213,7 +214,7 @@ export function DishModal({ dish, onClose }: DishModalProps) {
             className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-md disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ShoppingCart className="w-5 h-5" />
-            {isFitness && !isPack ? (weightGrams ? `确认添加 ${weightGrams}g` : '请先填写重量') : `确认添加到菜单 × ${quantity}${isPack ? '包' : ''}`}
+            {isFitness && !isPack ? (weightGrams ? `确认添加 ${weightGrams}${unit}` : `请先填写${unit === 'ml' ? '饮用量' : '重量'}`) : `确认添加到菜单 × ${quantity}${isPack ? '包' : ''}`}
           </button>
         </div>
       </div>

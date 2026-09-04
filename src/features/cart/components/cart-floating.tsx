@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { createOrder } from '@/features/order/actions/order-actions';
 import { useRouter } from '@/i18n/routing';
 import { ordersPath, signInPath } from '@/paths';
-import { hasPackNutrition, isValidWeight, itemSubtotal, parseWeight, usesGramWeight } from '@/features/dish/weight';
+import { hasPackNutrition, isValidWeight, itemSubtotal, measurementUnit, parseWeight, usesMeasuredAmount, usesVolumeMl } from '@/features/dish/weight';
 
 export function CartFloating() {
   const t = useTranslations('cart');
@@ -29,7 +29,7 @@ export function CartFloating() {
   } = useCartStore();
   const itemCount = getItemCount();
   const total = getTotal();
-  const hasInvalidWeight = items.some((item) => usesGramWeight(item.dish) && !isValidWeight(item.weightGrams));
+  const hasInvalidWeight = items.some((item) => usesMeasuredAmount(item.dish) && !isValidWeight(usesVolumeMl(item.dish) ? item.volumeMl : item.weightGrams));
   const moneyFormatter = new Intl.NumberFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
     style: 'currency',
     currency: 'CNY',
@@ -47,6 +47,7 @@ export function CartFloating() {
           dishId: item.dish.id,
           quantity: item.quantity,
           weightGrams: item.weightGrams,
+          volumeMl: item.volumeMl,
           remark: item.remark,
         })),
       });
@@ -130,13 +131,13 @@ export function CartFloating() {
                       {/* 菜品信息 */}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium truncate">{item.dish.name}</h3>
-                        {usesGramWeight(item.dish) ? (
+                        {usesMeasuredAmount(item.dish) ? (
                           <div className="mt-2 flex items-center gap-2">
                             <input inputMode="decimal" aria-label={`${item.dish.name}食用重量`}
-                              defaultValue={item.weightGrams ?? ''} placeholder="填写重量"
+                              defaultValue={(usesVolumeMl(item.dish) ? item.volumeMl : item.weightGrams) ?? ''} placeholder={usesVolumeMl(item.dish) ? '填写饮用量' : '填写重量'}
                               onChange={(event) => updateWeight(item.dish.id, parseWeight(event.target.value))}
                               className="w-28 rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:border-primary" />
-                            <span className="text-sm font-medium">g</span>
+                            <span className="text-sm font-medium">{measurementUnit(item.dish)}</span>
                           </div>
                         ) : <p className="text-sm text-muted-foreground">x {item.quantity}{hasPackNutrition(item.dish.nutrition) ? '包' : ''}</p>}
                         {item.remark && (
@@ -147,11 +148,11 @@ export function CartFloating() {
                       </div>
 
                       <div className="min-w-[72px] text-right text-sm font-medium">
-                        {moneyFormatter.format(itemSubtotal(item.dish.price, item.quantity, item.weightGrams))}
+                        {moneyFormatter.format(itemSubtotal(item.dish.price, item.quantity, item.weightGrams, item.volumeMl))}
                       </div>
 
                       {/* 数量控制 */}
-                      {!usesGramWeight(item.dish) && <div className="flex items-center gap-2">
+                      {!usesMeasuredAmount(item.dish) && <div className="flex items-center gap-2">
                         <button
                           onClick={() => updateQuantity(item.dish.id, item.quantity - 1)}
                           className="w-8 h-8 rounded-full bg-background flex items-center justify-center hover:bg-muted"

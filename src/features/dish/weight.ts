@@ -21,10 +21,24 @@ export function hasPackNutrition(nutrition: DishNutrition | null | undefined) {
   return nutrition?.basis === 'PER_SERVING' && nutrition.servingUnit === 'serving';
 }
 
+export type MeasurementUnit = 'g' | 'ml';
+export function measurementUnit(dish: { category: string; nutrition?: DishNutrition | null }): MeasurementUnit | null {
+  if (dish.category !== 'FITNESS_MEAL' || hasPackNutrition(dish.nutrition)) return null;
+  return dish.nutrition?.basis === 'PER_100ML' && dish.nutrition.servingUnit === 'ml' ? 'ml' : 'g';
+}
+
 export function usesGramWeight(dish: { category: string; nutrition?: DishNutrition | null }) {
   // Old persisted cart entries may not contain nutrition yet. Only an explicit
   // packaged-serving basis opts a fitness dish out of gram entry.
-  return dish.category === 'FITNESS_MEAL' && !hasPackNutrition(dish.nutrition);
+  return measurementUnit(dish) === 'g';
+}
+
+export function usesVolumeMl(dish: { category: string; nutrition?: DishNutrition | null }) {
+  return measurementUnit(dish) === 'ml';
+}
+
+export function usesMeasuredAmount(dish: { category: string; nutrition?: DishNutrition | null }) {
+  return measurementUnit(dish) !== null;
 }
 
 export function nutrientAtWeight(value: number | null, grams: number): number | null {
@@ -32,6 +46,7 @@ export function nutrientAtWeight(value: number | null, grams: number): number | 
 }
 
 /** Fitness prices are per 100g; ordinary dishes use a unit price. */
-export function itemSubtotal(price: number, quantity: number, weightGrams?: number | null) {
-  return Math.round((price * (weightGrams == null ? quantity : weightGrams / 100) + Number.EPSILON) * 100) / 100;
+export function itemSubtotal(price: number, quantity: number, weightGrams?: number | null, volumeMl?: number | null) {
+  const amount = weightGrams ?? volumeMl;
+  return Math.round((price * (amount == null ? quantity : amount / 100) + Number.EPSILON) * 100) / 100;
 }

@@ -1,13 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Dish } from '../dish/types';
-import { isValidWeight, itemSubtotal, usesGramWeight } from '../dish/weight';
+import { isValidWeight, itemSubtotal, usesMeasuredAmount, usesVolumeMl } from '../dish/weight';
 
 export interface CartItem {
   dish: Dish;
   quantity: number;
   remark?: string;
   weightGrams?: number;
+  volumeMl?: number;
 }
 
 interface CartStore {
@@ -36,7 +37,7 @@ export const useCartStore = create<CartStore>()(
       gatheringTitle: undefined,
 
       addItem: (dish, quantity = 1, remark) => {
-        if (usesGramWeight(dish)) return;
+        if (usesMeasuredAmount(dish)) return;
         set((state) => {
           const existingItem = state.items.find((item) => item.dish.id === dish.id);
           
@@ -58,8 +59,8 @@ export const useCartStore = create<CartStore>()(
         });
       },
 
-      addFitnessItem: (dish, weightGrams, remark) => {
-        if (!usesGramWeight(dish) || !isValidWeight(weightGrams))
+      addFitnessItem: (dish, measuredAmount, remark) => {
+        if (!usesMeasuredAmount(dish) || !isValidWeight(measuredAmount))
           return;
         set((state) => {
           const existing = state.items.find((item) => item.dish.id === dish.id);
@@ -67,7 +68,8 @@ export const useCartStore = create<CartStore>()(
           const next = {
             dish,
             quantity: 1,
-            weightGrams,
+            weightGrams: usesVolumeMl(dish) ? undefined : measuredAmount,
+            volumeMl: usesVolumeMl(dish) ? measuredAmount : undefined,
             remark: remark ?? existing?.remark,
           };
           return {
@@ -80,10 +82,12 @@ export const useCartStore = create<CartStore>()(
         });
       },
 
-      updateWeight: (dishId, weightGrams) => {
+      updateWeight: (dishId, measuredAmount) => {
         set((state) => ({ items: state.items.map((item) =>
-          item.dish.id === dishId && usesGramWeight(item.dish)
-            ? { ...item, quantity: 1, weightGrams: isValidWeight(weightGrams) ? weightGrams : undefined }
+          item.dish.id === dishId && usesMeasuredAmount(item.dish)
+            ? { ...item, quantity: 1,
+                weightGrams: !usesVolumeMl(item.dish) && isValidWeight(measuredAmount) ? measuredAmount : undefined,
+                volumeMl: usesVolumeMl(item.dish) && isValidWeight(measuredAmount) ? measuredAmount : undefined }
             : item) }));
       },
 
@@ -95,7 +99,7 @@ export const useCartStore = create<CartStore>()(
 
       updateQuantity: (dishId, quantity) => {
         const item = get().items.find((entry) => entry.dish.id === dishId);
-        if (item && usesGramWeight(item.dish)) return;
+        if (item && usesMeasuredAmount(item.dish)) return;
         if (quantity <= 0) {
           get().removeItem(dishId);
           return;
@@ -129,8 +133,9 @@ export const useCartStore = create<CartStore>()(
           const price = typeof item.dish.price === 'number' 
             ? item.dish.price 
             : Number(item.dish.price);
-          return sum + (usesGramWeight(item.dish) && !isValidWeight(item.weightGrams)
-            ? 0 : itemSubtotal(price, item.quantity, item.weightGrams));
+          const measuredAmount = usesVolumeMl(item.dish) ? item.volumeMl : item.weightGrams;
+          return sum + (usesMeasuredAmount(item.dish) && !isValidWeight(measuredAmount)
+            ? 0 : itemSubtotal(price, item.quantity, item.weightGrams, item.volumeMl));
         }, 0);
       },
 
@@ -144,8 +149,8 @@ export const useCartStore = create<CartStore>()(
       migrate: (persisted) => {
         const state = persisted as Pick<CartStore, 'items' | 'gatheringId' | 'gatheringTitle'>;
         return { ...state, items: (state.items ?? []).map((item) =>
-          usesGramWeight(item.dish)
-            ? { ...item, quantity: 1, weightGrams: undefined }
+          usesMeasuredAmount(item.dish)
+            ? { ...item, quantity: 1, weightGrams: undefined, volumeMl: undefined }
             : item) };
       },
     }

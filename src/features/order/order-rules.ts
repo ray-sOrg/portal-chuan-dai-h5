@@ -20,6 +20,9 @@ const orderItemSchema = z.object({
   weightGrams: z.number().min(0.01, '食用重量不能小于 0.01g').max(10000, '食用重量不能超过 10000g')
     .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-7, '食用重量最多支持两位小数')
     .optional(),
+  volumeMl: z.number().min(0.01, '饮用量不能小于 0.01ml').max(10000, '饮用量不能超过 10000ml')
+    .refine((value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-7, '饮用量最多支持两位小数')
+    .optional(),
 });
 
 export const createOrderInputSchema = z
