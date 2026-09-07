@@ -91,11 +91,13 @@ model Session {
   id        String   @id @default(cuid())
   expiresAt DateTime
   userId    String   @db.Uuid
+  oidcSid   String?
 
   // 关联
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([oidcSid])
 }
 
 // 跨实例共享的认证失败计数
