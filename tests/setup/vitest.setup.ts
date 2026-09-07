@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 
-if (typeof localStorage?.setItem !== 'function') {
+if (typeof globalThis.localStorage?.setItem !== 'function') {
   const values = new Map<string, string>();
   Object.defineProperty(globalThis, 'localStorage', { value: {
     getItem: (key: string) => values.get(key) ?? null,
