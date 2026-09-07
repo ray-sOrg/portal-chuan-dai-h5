@@ -3,6 +3,8 @@ import { Noto_Sans_SC, Noto_Serif_SC } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import VersionInfo from "@/components/VersionInfo";
+import { SilentSso } from "@/components/silent-sso";
+import { getAuth } from "@/features/auth/queries/get-auth";
 
 const bodySans = Noto_Sans_SC({
   subsets: ["latin"],
@@ -23,15 +25,17 @@ export const metadata: Metadata = {
   description: "A Family-Style Sichuan Restaurant with Dai Ethnic Flavors",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { user } = await getAuth();
   return (
     <html lang="zh" suppressHydrationWarning>
       <body className={`${bodySans.variable} ${displaySerif.variable}`}>
         {children}
+        <SilentSso loginUrl="/api/auth/oidc/login?silent=1" enabled={!user} />
         <Toaster
           className="app-toaster"
           position="top-center"

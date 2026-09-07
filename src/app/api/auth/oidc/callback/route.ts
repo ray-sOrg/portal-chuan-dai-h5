@@ -2,11 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import * as oidc from "openid-client";
 import { lucia } from "@/lib/lucia";
 import { prisma } from "@/lib/prisma";
+import { silentResult } from "@/lib/silent-sso";
 import { appUrl, oidcConfig, OIDC_ATTEMPT_COOKIE, OIDC_CALLBACK_PATH, OIDC_STATE_COOKIE, secureCookie } from "@/lib/oidc";
 
 export async function GET(request: NextRequest) {
-  const state = request.cookies.get(OIDC_STATE_COOKIE)?.value;
-  const attempt = request.cookies.get(OIDC_ATTEMPT_COOKIE)?.value;
+  const silent = request.nextUrl.searchParams.get("state")?.startsWith("silent.") === true;
+  const suffix = silent ? "_silent" : "";
+  const state = request.cookies.get(OIDC_STATE_COOKIE + suffix)?.value;
+  const attempt = request.cookies.get(OIDC_ATTEMPT_COOKIE + suffix)?.value;
   if (!state || !attempt || request.nextUrl.searchParams.get("state") !== state) return new NextResponse("登录状态无效，请重新登录。", { status: 400 });
   const [codeVerifier, nonce, encodedReturnTo] = attempt.split("|");
   try {
@@ -17,14 +20,14 @@ export async function GET(request: NextRequest) {
     if (typeof claims?.sid !== 'string' || !claims.sid) throw new Error('Missing OIDC session');
     if (!claims?.sub) return new NextResponse("统一登录账号无效。", { status: 403 });
     const user = await prisma.user.findUnique({ where: { oidcSubject: claims.sub } });
-    if (!user) return NextResponse.redirect(new URL("/zh/sign-in?error=未绑定统一账号", appUrl()));
+    if (!user) return silent ? silentResult(false, appUrl()) : NextResponse.redirect(new URL("/zh/sign-in?error=未绑定统一账号", appUrl()));
     const session = await lucia.createSession(user.id, {});
     await prisma.session.update({where: {id: session.id}, data: {oidcSid: claims.sid}});
-    const response = NextResponse.redirect(new URL(decodeURIComponent(encodedReturnTo || "/zh/home"), appUrl()));
+    const response = silent ? silentResult(true, appUrl()) : NextResponse.redirect(new URL(decodeURIComponent(encodedReturnTo || "/zh/home"), appUrl()));
     const cookie = lucia.createSessionCookie(session.id); response.cookies.set(cookie.name, cookie.value, cookie.attributes);
     const clear = { httpOnly: true, secure: secureCookie(), sameSite: "lax" as const, path: OIDC_CALLBACK_PATH, maxAge: 0 };
-    response.cookies.set(OIDC_STATE_COOKIE, "", clear); response.cookies.set(OIDC_ATTEMPT_COOKIE, "", clear);
+    response.cookies.set(OIDC_STATE_COOKIE + suffix, "", clear); response.cookies.set(OIDC_ATTEMPT_COOKIE + suffix, "", clear);
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
     return response;
-  } catch { return new NextResponse("统一登录失败，请重试。", { status: 400 }); }
+  } catch { return silent ? silentResult(false, appUrl()) : new NextResponse("统一登录失败，请重试。", { status: 400 }); }
 }

@@ -58,6 +58,10 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        source: '/api/auth/oidc/callback',
+        headers: [{ key: 'X-Frame-Options', value: 'SAMEORIGIN' }],
+      },
     ];
   },
 };
