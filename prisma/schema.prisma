@@ -92,6 +92,8 @@ model Session {
   expiresAt DateTime
   userId    String   @db.Uuid
   oidcSid   String?
+  oidcRefreshToken String?
+  oidcCheckedAt DateTime?
 
   // 关联
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

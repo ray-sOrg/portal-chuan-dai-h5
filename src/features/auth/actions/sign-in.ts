@@ -34,6 +34,9 @@ export const signIn = async (
   _actionState: ActionState,
   formData: FormData
 ): Promise<ActionState> => {
+  if (process.env.OIDC_SESSION_ENFORCED === "true") {
+    return toActionState("ERROR", "请使用统一账号登录", formData);
+  }
   try {
     const { account, password } = signInSchema.parse(
       Object.fromEntries(formData)

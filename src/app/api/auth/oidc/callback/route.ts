@@ -3,6 +3,7 @@ import * as oidc from "openid-client";
 import { lucia } from "@/lib/lucia";
 import { prisma } from "@/lib/prisma";
 import { silentResult } from "@/lib/silent-sso";
+import { sealRefreshToken } from "@/lib/central-session";
 import { appUrl, oidcConfig, OIDC_ATTEMPT_COOKIE, OIDC_CALLBACK_PATH, OIDC_STATE_COOKIE, secureCookie } from "@/lib/oidc";
 
 export async function GET(request: NextRequest) {
@@ -22,7 +23,8 @@ export async function GET(request: NextRequest) {
     const user = await prisma.user.findUnique({ where: { oidcSubject: claims.sub } });
     if (!user) return silent ? silentResult(false, appUrl()) : NextResponse.redirect(new URL("/zh/sign-in?error=未绑定统一账号", appUrl()));
     const session = await lucia.createSession(user.id, {});
-    await prisma.session.update({where: {id: session.id}, data: {oidcSid: claims.sid}});
+    await prisma.session.update({where: {id: session.id}, data: {oidcSid: claims.sid,
+      oidcRefreshToken: tokens.refresh_token ? sealRefreshToken(tokens.refresh_token) : null, oidcCheckedAt: new Date()}});
     const response = silent ? silentResult(true, appUrl()) : NextResponse.redirect(new URL(decodeURIComponent(encodedReturnTo || "/zh/home"), appUrl()));
     const cookie = lucia.createSessionCookie(session.id); response.cookies.set(cookie.name, cookie.value, cookie.attributes);
     const clear = { httpOnly: true, secure: secureCookie(), sameSite: "lax" as const, path: OIDC_CALLBACK_PATH, maxAge: 0 };

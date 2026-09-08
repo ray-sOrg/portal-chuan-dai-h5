@@ -45,6 +45,12 @@ spec:
               cpu: "500m"
               memory: "512Mi"
           env:
+            - name: OIDC_SESSION_ENFORCED
+              valueFrom:
+                configMapKeyRef:
+                  name: central-session-policy
+                  key: enforced
+                  optional: true
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
