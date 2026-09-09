@@ -1,5 +1,5 @@
 # =================== Step 1: Install dependencies ===================
-FROM oven/bun:1-debian AS deps
+FROM oven/bun:1.3.10-alpine AS deps
 WORKDIR /app
 
 # 拷贝 package.json 和 bun.lock
@@ -7,7 +7,7 @@ COPY package.json bun.lock bunfig.toml ./
 COPY prisma/schema.prisma ./prisma/schema.prisma
 
 # 使用 bunfig.toml 中配置的镜像源安装依赖
-RUN --mount=type=cache,target=/root/.bun/install/cache \
+RUN --mount=type=cache,id=chuan-dai-bun,target=/root/.bun/install/cache,sharing=locked \
     bun install --frozen-lockfile
 
 # =================== Step 2: Build project ==========================
@@ -24,10 +24,11 @@ ENV NODE_ENV=production
 COPY . .
 
 # 执行 Next.js 构建，postinstall 会生成 Prisma Client
-RUN bun run build
+RUN --mount=type=cache,id=chuan-dai-next,target=/app/.next/cache \
+    bun run build
 
 # =================== Step 3: Production runtime ====================
-FROM oven/bun:1-debian AS runner
+FROM oven/bun:1.3.10-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -43,4 +44,4 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 EXPOSE 3000
 
 # 使用 Bun 启动 standalone server
-CMD ["bun", "run", "server.js"]
+CMD ["bun", "server.js"]

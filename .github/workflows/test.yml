@@ -58,6 +58,9 @@ jobs:
       - name: Lint test files
         run: bun run lint:tests
 
+      - name: Type check application
+        run: bun run typecheck
+
       - name: Unit tests
         run: bun run test:unit
 
