@@ -8,7 +8,6 @@ import {
   Bell,
   Shield,
   ChevronRight,
-  Key,
   UtensilsCrossed,
   Image,
   Receipt,
@@ -135,9 +134,6 @@ function AuthenticatedContent({ profile }: { profile: Profile }) {
       <section className="card-base overflow-hidden">
         <SectionHeading icon={Settings} title={t("profile.appSettings")} />
         <div className="grid gap-3 p-4 pt-0 sm:grid-cols-2">
-          <Link href="/profile/change-password" className="block">
-            <SettingsItem icon={Key} label={t("auth.changePassword")} />
-          </Link>
           <Link href="/settings/general" className="block">
             <SettingsItem icon={Settings} label={t("profile.generalSettings")} />
           </Link>

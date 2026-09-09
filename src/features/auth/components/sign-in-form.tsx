@@ -1,71 +1,18 @@
-"use client";
-
-import { useActionState } from "react";
-import { useTranslations } from "next-intl";
-import { FieldError, Form, SubmitButton } from "@/components/form";
-import { Link } from "@/i18n/routing";
-import { EMPTY_ACTION_STATE } from "@/components/form/utils/to-action-state";
-import { profilePath, signUpPath } from "@/paths";
-
-import { signIn } from "../actions/sign-in";
+import { profilePath } from "@/paths";
 
 interface SignInFormProps {
     redirectTo?: string;
 }
 
 export function SignInForm({ redirectTo = profilePath }: SignInFormProps) {
-    const t = useTranslations("auth");
-
-    // 绑定 redirectTo 参数到 signIn action
-    const signInWithRedirect = signIn.bind(null, redirectTo);
-    const [actionState, action] = useActionState(signInWithRedirect, EMPTY_ACTION_STATE);
-
     return (
-        <>
-        <a href={`/api/auth/oidc/login?returnTo=${encodeURIComponent(redirectTo)}`} className="mb-5 flex h-10 w-full items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90">
+        <div className="space-y-4">
+          <p className="text-center text-sm leading-6 text-muted-foreground">
+            川傣餐馆仅使用 TT829 统一账号，不再支持独立注册或密码登录。
+          </p>
+          <a href={`/api/auth/oidc/login?returnTo=${encodeURIComponent(redirectTo)}`} className="flex h-10 w-full items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:opacity-90">
             使用统一账号登录
-        </a>
-        <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" /><span>迁移期间旧账号登录</span><span className="h-px flex-1 bg-border" /></div>
-        <Form action={action} actionState={actionState} className="flex flex-col gap-y-4">
-            <div>
-                <input
-                    name="account"
-                    type="text"
-                    autoComplete="username"
-                    maxLength={16}
-                    placeholder={t("accountPlaceholder")}
-                    defaultValue={actionState.payload?.account}
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <FieldError name="account" actionState={actionState} />
-            </div>
-
-            <div>
-                <input
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    maxLength={128}
-                    placeholder={t("passwordPlaceholder")}
-                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-                <FieldError name="password" actionState={actionState} />
-            </div>
-
-            <SubmitButton label={t("signIn")} className="w-full" />
-
-            <div className="flex items-center justify-between text-sm">
-                <Link href="/forgot-password" className="text-muted-foreground hover:text-primary">
-                    {t("forgotPassword")}
-                </Link>
-                <p className="text-muted-foreground">
-                    {t("noAccount")}{" "}
-                    <Link href={signUpPath} className="text-primary hover:underline">
-                        {t("signUp")}
-                    </Link>
-                </p>
-            </div>
-        </Form>
-        </>
+          </a>
+        </div>
     );
 }

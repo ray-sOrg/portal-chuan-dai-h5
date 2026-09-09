@@ -173,16 +173,20 @@ test('uploading photos requires sign in', async ({ page }) => {
   await expect(page.getByRole('heading', { name: '欢迎回来' })).toBeVisible();
 });
 
-test('sign in page links to registration and password recovery', async ({ page }) => {
+test('sign in page only offers the unified account', async ({ page }) => {
   await page.goto('/zh/sign-in');
 
-  await expect(page.getByPlaceholder('请输入账号或手机号')).toBeVisible();
-  await expect(page.getByPlaceholder('请输入密码')).toBeVisible();
+  await expect(page.getByRole('link', { name: '使用统一账号登录' })).toHaveAttribute(
+    'href',
+    /\/api\/auth\/oidc\/login/
+  );
+  await expect(page.getByPlaceholder('请输入账号或手机号')).toHaveCount(0);
+  await expect(page.getByPlaceholder('请输入密码')).toHaveCount(0);
+});
 
-  await page.getByRole('link', { name: '注册' }).click();
-  await expect(page).toHaveURL(/\/zh\/sign-up$/);
-
-  await page.goto('/zh/sign-in');
-  await page.getByRole('link', { name: '忘记密码' }).click();
-  await expect(page).toHaveURL(/\/zh\/forgot-password$/);
+test('legacy account pages return to unified sign in', async ({ page }) => {
+  for (const path of ['/zh/sign-up', '/zh/forgot-password']) {
+    await page.goto(path);
+    await expect(page).toHaveURL(/\/zh\/sign-in$/);
+  }
 });

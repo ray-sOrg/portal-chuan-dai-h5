@@ -42,7 +42,7 @@ export default function proxy(request: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
-  // 已登录用户访问登录/注册页的重定向逻辑移到页面组件中处理
+  // 已登录用户访问登录页的重定向逻辑移到页面组件中处理
   // 因为 proxy 无法真正验证 session 有效性
 
   // 其他路径使用 next-intl 的默认处理
